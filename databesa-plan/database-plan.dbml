@@ -1,5 +1,5 @@
 Table user {
-  id int
+  id int [pk]
   username varchar(25) [unique]
   password varchar(255)
   email varchar(320) [unique]
@@ -9,7 +9,7 @@ Table user {
 }
 
 Table userInfo {
-  id int
+  id int [pk]
   user_id int [ref: - user.id]
   image_id int [ref: - image.id]
   category_id int [ref: < category.id]
@@ -22,16 +22,24 @@ Table user_favourite_location {
   user_id int [ref: - user.id]
   location_id int [ref: - location.id]
   created_at datetime [default: `now()`]
+
+  indexes {
+    (user_id, location_id) [unique]
+  }
 }
 
 Table user_favourite_event {
-  user_id int [unique, ref: - user.id]
-  event_id int [unique, ref: - event.id]
+  user_id int [ref: - user.id]
+  event_id int [ref: - event.id]
   created_at datetime [default: `now()`]
+
+  indexes {
+    (user_id, event_id) [unique]
+  }
 }
 
 Table group {
-  id int
+  id int [pk]
   name varchar(50)
   image_id int [ref: - image.id]
   description varchar(500)
@@ -43,12 +51,12 @@ Table group {
 }
 
 Table location {
-  id int
+  id int [pk]
   name varchar(50)
   location varchar(50)
   description varchar(500)
   image_id int [ref: < image.id]
-  category enum
+  category int [ref: < category.id]
   rating dec(1,1)
   created_by int [ref: - user.id]
   isApproved tinyint
@@ -58,7 +66,7 @@ Table location {
 }
 
 Table event {
-  id int
+  id int [pk]
   location_id int [ref: - location.id]
   time datetime
   created_by int [ref: - user.id]
@@ -68,13 +76,13 @@ Table event {
 }
 
 Table category {
-  id int
+  id int [pk]
   name varchar(50)
   image_id int [ref: - image.id]
 }
 
 Table image {
-  id int
+  id int [pk]
   name varchar(25)
   path varchar(150)
   created_at datetime [default: `now()`]
@@ -82,7 +90,7 @@ Table image {
 }
 
 Table location_review {
-  id int
+  id int [pk]
   user_id int [ref: - user.id]
   location_id int [ref: - location.id]
   created_at datetime [default: `now()`]
@@ -91,7 +99,7 @@ Table location_review {
 }
 
 Table event_review {
-  id int
+  id int [pk]
   user_id int [ref: - user.id]
   event_id int [ref: - event.id]
   created_at datetime [default: `now()`]
