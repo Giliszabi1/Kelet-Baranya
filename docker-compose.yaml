@@ -44,6 +44,19 @@ services:
       - mysql_data:/var/lib/mysql
       - ./docker/mysql/init.sql:/docker-entrypoint-initdb.d/
 
+  phpmyadmin:
+    image: phpmyadmin/phpmyadmin
+    container_name: kelet_baranya_phpmyadmin
+    restart: always
+    ports:
+      - "8080:80"
+    environment:
+      PMA_HOST: mysql
+      PMA_PORT: 3306
+      MYSQL_ROOT_PASSWORD: root
+    depends_on:
+      - mysql
+
 
 volumes:
   mysql_data:
