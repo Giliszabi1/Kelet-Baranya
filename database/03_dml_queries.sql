@@ -122,7 +122,7 @@ CREATE PROCEDURE sp_event_create(
 )
 BEGIN
 INSERT INTO `event`(`title`, `location_id`, `start_time`, `end_time`, `description`, `group_id`, `max_participants`, `rating`, `repeat_id`, `approved_status`, `created_by_user_id`, `created_at`, `isDeleted`)
- VALUES ('p_title','p_location_id','p_start_time','p_end_time','p_description','p_group_id','p_max_participants','p_rating','p_repeat_id','p_approved_status','p_created_by_user_id', NOW(),'0')
+ VALUES ('p_title','p_location_id','p_start_time','p_end_time','p_description','p_group_id','p_max_participants','p_rating','p_repeat_id','p_approved_status','p_created_by_user_id', NOW(),'0');
 
     SET p_new_id = LAST_INSERT_ID();
 END$$
