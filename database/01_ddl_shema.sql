@@ -285,7 +285,7 @@ DROP TABLE IF EXISTS `image`;
 CREATE TABLE `image` (
   `id` int(11) NOT NULL,
   `name` varchar(25) NOT NULL,
-  `path` text NOT NULL,
+  `path` varchar(255) NOT NULL,
   `type` enum('profile','location','event','group','category') NOT NULL,
   `created_by` int(11) DEFAULT NULL,
   `created_at` datetime DEFAULT current_timestamp(),

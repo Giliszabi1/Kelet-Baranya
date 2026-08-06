@@ -99,7 +99,7 @@ DELIMITER ;
 -- =========================================================
 -- Event tábla
 -- =========================================================
-/*
+
 DELIMITER $$
 
 -- ---------------------------------------------------------
@@ -107,29 +107,35 @@ DELIMITER $$
 -- ---------------------------------------------------------
 DROP PROCEDURE IF EXISTS sp_event_create$$
 CREATE PROCEDURE sp_event_create(
-    IN  p_username      VARCHAR(25),
-    IN  p_password_hash VARCHAR(255),  -- a jelszót MINDIG az alkalmazás
-                                        -- oldalon hasheld, ide már a hash jön
-    IN  p_email         VARCHAR(255),
+    IN  p_title         VARCHAR(75),
+    IN  p_location_id   INT,
+    IN  p_start_time    DATETIME,
+    IN  p_end_time      DATETIME,
+    IN  p_description   TEXT,
+    IN  p_group_id      INT,
+    IN  p_max_participants int,
+    IN  p_rating decimal(2,1),
+    IN  p_repeat_id int,
+    IN  p_approved_status ENUM("pending", "approved", "denied"),
+    IN  p_created_by_user_id int,
     OUT p_new_id        INT
 )
 BEGIN
-    INSERT INTO `user` (username, password_hash, email)
-    VALUES (p_username, p_password_hash, p_email);
+INSERT INTO `event`(`title`, `location_id`, `start_time`, `end_time`, `description`, `group_id`, `max_participants`, `rating`, `repeat_id`, `approved_status`, `created_by_user_id`, `created_at`, `isDeleted`)
+ VALUES ('p_title','p_location_id','p_start_time','p_end_time','p_description','p_group_id','p_max_participants','p_rating','p_repeat_id','p_approved_status','p_created_by_user_id', NOW(),'0')
 
     SET p_new_id = LAST_INSERT_ID();
 END$$
 
 -- ---------------------------------------------------------
--- READ - egy konkrét felhasználó lekérése id alapján
--- Csak a nem törölt (isDeleted = 0) sorokat adjuk vissza.
+-- READ
 -- ---------------------------------------------------------
-DROP PROCEDURE IF EXISTS sp_user_get_by_id$$
-CREATE PROCEDURE sp_user_get_by_id(
+DROP PROCEDURE IF EXISTS sp_event_get_by_id$$
+CREATE PROCEDURE sp_event_get_by_id(
     IN p_id INT
 )
 BEGIN
-    SELECT id, username, email, created_at, updated_at
+    SELECT `id`, `title`, `location_id`, `start_time`, `end_time`, `description`, `group_id`, `max_participants`, `rating`, `repeat_id`, `approved_status`, `created_by_user_id`, `created_at`, `updated_at`
     FROM `user`
     WHERE id = p_id
       AND isDeleted = 0;
