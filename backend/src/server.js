@@ -1,6 +1,6 @@
 const app = require("./app");
 
-const config = require("./config/app.config");
+const config = require("./config/app.config").serverConfig();
 
 
 app.listen(config.PORT, config.HOST, () => {
