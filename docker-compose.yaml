@@ -22,6 +22,9 @@ services:
       DB_PASSWORD: kelet_user
     ports:
       - 3000:3000
+    volumes:
+      - ./backend:/usr/src/app
+      - /usr/src/app/node_modules
     depends_on:
       - mysql
   mysql:

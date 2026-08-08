@@ -1,7 +1,7 @@
 const config = require("../config/database.config");
 const mysql2 = require('mysql2/promise');
 
-mysql2.createConnection({
+const DB_CONNECT = mysql2.createPool({
     host: config.DB_host,
     port: config.DB_port,
     user: config.DB_user,
@@ -9,4 +9,4 @@ mysql2.createConnection({
     database: config.DB_database
     
 })
-module.exports = mysql2
+module.exports = DB_CONNECT
