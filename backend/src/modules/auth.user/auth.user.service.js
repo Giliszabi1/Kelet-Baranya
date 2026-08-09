@@ -1,4 +1,4 @@
-const authRepository  = require('./auth.repository');
+const authRepository  = require('./auth.user.repository');
 
 const Encryption = require("../../utils/password")
 class UserService {

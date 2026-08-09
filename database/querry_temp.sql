@@ -40,6 +40,8 @@ BEGIN
                 MYSQL_ERRNO  = 45009;
     END;
 
+
+
     -- Kötelező mezők ellenőrzése
     IF p_username IS NULL OR TRIM(p_username) = '' 
        OR p_password_hash IS NULL OR TRIM(p_password_hash) = ''
