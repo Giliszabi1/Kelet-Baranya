@@ -4,8 +4,12 @@ class usersRepository {
 
     async register(username, email, password_hash) {
         const [answer] = await DB_CONNECT.query("call sp_user_create(?, ?, ?);", [username, password_hash, email])
-        console.log(answer)
-        return answer;
+        return answer[0][0];
+    }
+
+    async login(loginIdentifier) {
+        const [answer] = await DB_CONNECT.query("call sp_user_login(?);", [loginIdentifier])
+        return answer[0][0];
     }
 }
 

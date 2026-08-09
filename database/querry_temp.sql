@@ -26,8 +26,7 @@ DROP PROCEDURE IF EXISTS `sp_user_create` $$
 CREATE PROCEDURE `sp_user_create` (
     IN  p_username      VARCHAR(25),
     IN  p_password_hash VARCHAR(255),
-    IN  p_email         VARCHAR(255),
-    OUT p_new_id        INT
+    IN  p_email         VARCHAR(255)
 )
 BEGIN
     DECLARE v_exists_username INT DEFAULT 0;
@@ -82,7 +81,7 @@ BEGIN
     INSERT INTO `user` (`username`, `password_hash`, `email`, `created_at`, `isDeleted`)
     VALUES (p_username, p_password_hash, p_email, NOW(), 0);
 
-    SET p_new_id = LAST_INSERT_ID();
+    SELECT * FROM `user` WHERE id = LAST_INSERT_ID();
 END $$
 
 
@@ -118,6 +117,47 @@ BEGIN
     WHERE `id` = p_id;
 END $$
 
+-- sp
+
+DROP PROCEDURE IF EXISTS `sp_user_login` $$
+CREATE PROCEDURE `sp_user_login` (
+    IN sp_login_identifiry VARCHAR(255)
+)
+BEGIN
+    DECLARE v_count INT DEFAULT 0;
+
+    -- Üres/null login azonosító ellenőrzése
+    IF sp_login_identifiry IS NULL OR TRIM(sp_login_identifiry) = '' THEN
+        SIGNAL SQLSTATE '45000'
+            SET MESSAGE_TEXT = 'A bejelentkezési azonosító nem lehet üres.',
+                MYSQL_ERRNO = 45007;
+    END IF;
+
+    -- Felhasználó keresése email vagy username alapján
+    SELECT COUNT(*)
+    INTO v_count
+    FROM `user`
+    WHERE `email` = sp_login_identifiry
+       OR `username` = sp_login_identifiry;
+
+    -- Ha nincs találat
+    IF v_count = 0 THEN
+        SIGNAL SQLSTATE '45000'
+            SET MESSAGE_TEXT = 'A felhasználó nem található.',
+                MYSQL_ERRNO = 45004;
+    END IF;
+
+    -- Felhasználó visszaadása
+    SELECT
+        `id`,
+        `username`,
+        `email`,
+        `password_hash`
+    FROM `user`
+    WHERE `email` = sp_login_identifiry
+       OR `username` = sp_login_identifiry;
+
+END $$
 
 -- =====================================================================
 -- READ - összes aktív (nem törölt) felhasználó listázása

@@ -5,6 +5,7 @@ class UserController {
         this.authService = new authService();
 
         this.register = this.register.bind(this);
+        this.login = this.login.bind(this);
     }
 
     async register(req, res, next) {
@@ -36,12 +37,15 @@ class UserController {
                 email, 
                 password
             });
-
-            return res.status(201).json({
-                success: true,
-                message: "User login successfully.",
-                data: user,
-            });
+            if(user.success){
+                return res.status(201).json({
+                    success: true,
+                    message: "User login successfully.",
+                    data: user.data,
+                });
+            }else{
+                next(user.error);
+            }
         } catch (err) {
             next(err);
         }

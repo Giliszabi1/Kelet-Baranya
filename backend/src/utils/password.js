@@ -7,7 +7,7 @@ class Encryption {
     }
 
     async verify(password, hash) {
-        return await bcrypt.compare(password, HASH_ITERATIONS);
+        return await bcrypt.compare(password, hash);
     }
 }
 
