@@ -19,72 +19,125 @@
 
 DELIMITER $$
 
+DROP PROCEDURE IF EXISTS `sp_base_settings_create`$$
+CREATE DEFINER=`root`@`%` PROCEDURE `sp_base_settings_create` (IN `p_user_id` INT(11))   BEGIN
+    DECLARE v_base_settings_id INT;
+
+    INSERT INTO `base_settings`
+        (`id`, `language`, `unit_system`, `push_notification`, `email_notification`, `dark_mode`)
+    VALUES
+        (p_user_id, 'en', 'metric', 0, 0, 0);
+
+    SET v_base_settings_id = p_user_id;
+
+    SELECT v_base_settings_id AS base_settings_id;
+END$$
+
+DROP PROCEDURE IF EXISTS `sp_userInfo_create`$$
+CREATE DEFINER=`root`@`%` PROCEDURE `sp_userInfo_create` (IN `p_user_id` INT(11), IN `p_user_settings_id` INT(11))   BEGIN
+    DECLARE v_userInfo_id INT;
+
+    INSERT INTO `userInfo`( `user_id`,  `user_settings_id`) VALUES (p_user_id, p_user_settings_id);
+
+    SET v_userInfo_id = LAST_INSERT_ID();
+
+    SELECT v_userInfo_id AS userInfo_id;
+END$$
+
+DROP PROCEDURE IF EXISTS `sp_user_register`$$
+CREATE DEFINER=`root`@`%` PROCEDURE `sp_user_register` (IN `p_username` VARCHAR(25), IN `p_password_hash` VARCHAR(255), IN `p_email` VARCHAR(255))   BEGIN
+    DECLARE v_user_id INT;
+    DECLARE v_base_settings_id INT;
+    DECLARE v_user_settings_id INT;
+
+    call sp_user_create(p_username, p_password_hash, p_email, "user");
+    SET v_user_id = LAST_INSERT_ID();
+
+    call sp_base_settings_create(v_user_id);
+    SET v_base_settings_id = LAST_INSERT_ID();
+
+    call sp_user_settings_create(v_base_settings_id);
+    SET v_user_settings_id = LAST_INSERT_ID();
+
+    call sp_userInfo_create(v_user_id, v_user_settings_id);
+    
+    SELECT `id`, `username`, `password_hash`, `email`, `type`  FROM `user` WHERE id = v_user_id;
+END$$
+
+DROP PROCEDURE IF EXISTS `sp_user_settings_create`$$
+CREATE DEFINER=`root`@`%` PROCEDURE `sp_user_settings_create` (IN `p_base_settings_id` INT(11))   BEGIN
+    DECLARE v_user_settings_id INT;
+
+    INSERT INTO `user_settings`(`settings_id`, `event_reminder`, `new_event_notification`) VALUES (p_base_settings_id, 0 , 0);
+
+    SET v_user_settings_id = LAST_INSERT_ID();
+
+    SELECT v_user_settings_id AS user_settings_id;
+END$$
+
+
+
 -- =====================================================================
 -- CREATE
 -- =====================================================================
-DROP PROCEDURE IF EXISTS `sp_user_create` $$
-CREATE PROCEDURE `sp_user_create` (
-    IN  p_username      VARCHAR(25),
-    IN  p_password_hash VARCHAR(255),
-    IN  p_email         VARCHAR(255)
-)
-BEGIN
+DROP PROCEDURE IF EXISTS `sp_user_create`$$
+CREATE DEFINER=`root`@`localhost` PROCEDURE `sp_user_create` (IN `p_username` VARCHAR(25), IN `p_password_hash` VARCHAR(255), IN `p_email` VARCHAR(255), IN `p_type` VARCHAR(255))   BEGIN
     DECLARE v_exists_username INT DEFAULT 0;
     DECLARE v_exists_email    INT DEFAULT 0;
 
-    -- Hibakezelő: ha mégis lecsúszna egy duplikáció a race condition miatt
+    -- HibakezelÅ‘: ha mÃ©gis lecsÃºszna egy duplikÃ¡ciÃ³ a race condition miatt
     DECLARE EXIT HANDLER FOR 1062
     BEGIN
         RESIGNAL SQLSTATE '45000'
-            SET MESSAGE_TEXT = 'Adatbázis szintű ütközés (duplikált username vagy email).',
+            SET MESSAGE_TEXT = 'AdatbÃ¡zis szintÅ± Ã¼tkÃ¶zÃ©s (duplikÃ¡lt username vagy email).',
                 MYSQL_ERRNO  = 45009;
     END;
 
 
 
-    -- Kötelező mezők ellenőrzése
+    -- KÃ¶telezÅ‘ mezÅ‘k ellenÅ‘rzÃ©se
     IF p_username IS NULL OR TRIM(p_username) = '' 
        OR p_password_hash IS NULL OR TRIM(p_password_hash) = ''
        OR p_email IS NULL OR TRIM(p_email) = '' THEN
         SIGNAL SQLSTATE '45000'
-            SET MESSAGE_TEXT = 'Hiányzó kötelező mező (username, password_hash, email).',
+            SET MESSAGE_TEXT = 'HiÃ¡nyzÃ³ kÃ¶telezÅ‘ mezÅ‘ (username, password_hash, email).',
                 MYSQL_ERRNO  = 45001;
     END IF;
 
-    -- Egyszerű email formátum ellenőrzés
+    -- EgyszerÅ± email formÃ¡tum ellenÅ‘rzÃ©s
     IF p_email NOT LIKE '_%@_%.__%' THEN
         SIGNAL SQLSTATE '45000'
-            SET MESSAGE_TEXT = 'Érvénytelen email formátum.',
+            SET MESSAGE_TEXT = 'Ã‰rvÃ©nytelen email formÃ¡tum.',
                 MYSQL_ERRNO  = 45006;
     END IF;
 
-    -- Username egyediség
+    -- Username egyedisÃ©g
     SELECT COUNT(*) INTO v_exists_username
     FROM `user`
     WHERE `username` = p_username;
 
     IF v_exists_username > 0 THEN
         SIGNAL SQLSTATE '45000'
-            SET MESSAGE_TEXT = 'A megadott felhasználónév már foglalt.',
+            SET MESSAGE_TEXT = 'A megadott felhasznÃ¡lÃ³nÃ©v mÃ¡r foglalt.',
                 MYSQL_ERRNO  = 45002;
     END IF;
 
-    -- Email egyediség
+    -- Email egyedisÃ©g
     SELECT COUNT(*) INTO v_exists_email
     FROM `user`
     WHERE `email` = p_email;
 
     IF v_exists_email > 0 THEN
         SIGNAL SQLSTATE '45000'
-            SET MESSAGE_TEXT = 'A megadott email cím már foglalt.',
+            SET MESSAGE_TEXT = 'A megadott email cÃ­m mÃ¡r foglalt.',
                 MYSQL_ERRNO  = 45003;
     END IF;
 
-    INSERT INTO `user` (`username`, `password_hash`, `email`, `created_at`, `isDeleted`)
-    VALUES (p_username, p_password_hash, p_email, NOW(), 0);
+    INSERT INTO `user` (`username`, `password_hash`, `email`, `type`,`created_at`, `isDeleted`)
+    VALUES (p_username, p_password_hash, p_email, p_type,NOW(), 0);
 
-    SELECT * FROM `user` WHERE id = LAST_INSERT_ID();
-END $$
+    SELECT `id`, `username`, `password_hash`, `email`, `type` FROM `user` WHERE id = LAST_INSERT_ID();
+END$$
 
 
 -- =====================================================================
