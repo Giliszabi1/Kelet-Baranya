@@ -1,4 +1,4 @@
-const config = require("../config/database.config");
+const config = require("../../config/database.config");
 const mysql2 = require('mysql2/promise');
 
 const DB_CONNECT = mysql2.createPool({

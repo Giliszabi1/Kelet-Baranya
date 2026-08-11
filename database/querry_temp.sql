@@ -145,6 +145,50 @@ BEGIN
     WHERE `token` = p_token
       AND `revoked_at` IS NULL;
 END $$
+DROP PROCEDURE IF EXISTS `sp_password_reset_token_create`$$
+CREATE PROCEDURE `sp_password_reset_token_create`(
+    IN p_user_id INT,
+    IN p_token VARCHAR(255),
+    IN p_expires_at DATETIME
+)
+BEGIN
+    DELETE FROM password_reset_token WHERE user_id = p_user_id;
+ 
+    INSERT INTO password_reset_token (user_id, token, expires_at)
+    VALUES (p_user_id, p_token, p_expires_at);
+END$$
+ 
+-- Token lekérdezése (érvényesség ellenőrzéséhez)
+DROP PROCEDURE IF EXISTS `sp_password_reset_token_get`$$
+CREATE PROCEDURE `sp_password_reset_token_get`(
+    IN p_token VARCHAR(255)
+)
+BEGIN
+    SELECT * FROM password_reset_token 
+    WHERE token = p_token
+    LIMIT 1;
+END$$
+ 
+-- Token törlése (sikeres jelszó-csere után, vagy lejárt token esetén)
+DROP PROCEDURE IF EXISTS `sp_password_reset_token_delete`$$
+CREATE PROCEDURE `sp_password_reset_token_delete`(
+    IN p_token VARCHAR(255)
+)
+BEGIN
+    DELETE FROM password_reset_token WHERE token = p_token;
+END$$
+ 
+-- Jelszó frissítése
+-- FONTOS: ellenőrizd, hogy nálad is `users` a tábla neve és
+-- `password_hash` az oszlop neve — ha más, itt írd át!
+DROP PROCEDURE IF EXISTS `sp_user_update_password`$$
+CREATE PROCEDURE `sp_user_update_password`(
+    IN p_user_id INT,
+    IN p_password_hash VARCHAR(255)
+)
+BEGIN
+    UPDATE user SET password_hash = p_password_hash WHERE id = p_user_id;
+END$$
 
 -- =====================================================================
 -- CREATE

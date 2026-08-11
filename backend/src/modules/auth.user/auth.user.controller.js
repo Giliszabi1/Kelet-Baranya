@@ -9,6 +9,9 @@ class UserController {
 
         this.refresh = this.refresh.bind(this);
         this.logout = this.logout.bind(this);
+
+        this.forgetPassword = this.forgetPassword.bind(this);
+        this.resetPassword = this.resetPassword.bind(this);
     }
 
     async register(req, res, next) {
@@ -85,7 +88,6 @@ class UserController {
                 });
             }
 
-
             const client = {
                 user_agent: req.headers["user-agent"] || null,
                 accept_language: req.headers["accept-language"] || null,
@@ -94,12 +96,10 @@ class UserController {
                 sec_ch_ua_platform: req.headers["sec-ch-ua-platform"] || null
             };
 
-
             const result = await this.authService.refresh({
                 token: refreshToken,
                 client
             });
-
 
             if (!result.success) {
                 return res.status(401).json({
@@ -108,7 +108,6 @@ class UserController {
                 });
             }
 
-
             return res.status(200).json({
                 success: true,
                 message: "Token refreshed successfully.",
@@ -116,16 +115,12 @@ class UserController {
             });
 
         } catch (err) {
-
             next(err);
-
         }
     }
 
     async logout(req, res, next) {
-
         try {
-
             const { refreshToken } = req.body;
 
             if (!refreshToken) {
@@ -135,10 +130,7 @@ class UserController {
                 });
             }
 
-
-            const result =
-                await this.authService.logout(refreshToken);
-
+            const result = await this.authService.logout(refreshToken);
 
             if (!result.success) {
                 return res.status(401).json({
@@ -147,19 +139,53 @@ class UserController {
                 });
             }
 
-
             return res.status(200).json({
                 success: true,
                 message: "Logout successful."
             });
 
         } catch (err) {
-
             next(err);
-
         }
     }
 
+    async forgetPassword(req, res, next) {
+        try {
+            const { email } = req.body;
+ 
+            await this.authService.forgetPassword({ email });
+ 
+            return res.status(200).json({
+                success: true,
+                message: "If the provided email address exists in our system, we've sent a password reset email."
+            });
+        } catch (err) {
+            next(err);
+        }
+    }
+
+    async resetPassword(req, res, next) {
+        try {
+            const { token, password } = req.body;
+ 
+            const result = await this.authService.resetPassword({ token, password });
+ 
+            if (!result.success) {
+                return res.status(400).json({
+                    success: false,
+                    message: result.error
+                });
+            }
+ 
+            return res.status(200).json({
+                success: true,
+                message: "Password has been reset successfully."
+            });
+ 
+        } catch (err) {
+            next(err);
+        }
+    }
 }
 
 module.exports = new UserController();

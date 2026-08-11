@@ -1,4 +1,4 @@
-const DB_CONNECT = require("../../database/mysql.database");
+const DB_CONNECT = require("../../infrastructure/database/mysql.database");
 
 class usersRepository {
 

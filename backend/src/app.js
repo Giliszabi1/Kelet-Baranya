@@ -6,7 +6,6 @@ const config = require("./config/app.config");
 
 const modules = require('./modules/init');
 
-
 const app = express()
 
 app.use(express.json());

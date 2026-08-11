@@ -5,6 +5,10 @@ const authRepository  = require('./auth.user.repository');
 const Encryption = require("../../utils/password")
 const JWT = require("../../utils/jwt");
 const RefreshToken = require('../../utils/refreshToken');
+
+const transporter = require('../../infrastructure/mail/smtp.mail');
+const smtpConfig = require('../../config/smtp.config');
+
 class UserService {
     
 
@@ -152,10 +156,8 @@ class UserService {
             expires_at: newExpiresAt
         });
 
-
         return {
             success: true,
-
             data: {
                 accessToken,
                 refreshToken: newRefreshToken
@@ -179,6 +181,68 @@ class UserService {
         return {
             success: true
         };
+    }
+
+    async forgetPassword({ email }) {
+        const user = await authRepository.login(email);
+
+        if (!user || !user.id) {
+            return { success: true };
+        }
+ 
+        const resetToken = RefreshToken.generate();
+ 
+        const expiresAt = new Date();
+        expiresAt.setMinutes(expiresAt.getMinutes() + Number(process.env.PASSWORD_RESET_TOKEN_EXPIRES_MINUTES || 30));
+ 
+        await authRepository.createPasswordResetToken({
+            user_id: user.id,
+            token: resetToken,
+            expires_at: expiresAt
+        });
+ 
+        try {
+            await transporter.sendMail({
+                from: smtpConfig.SMTP_USER,
+                to: user.email,
+                subject: "Jelszó visszaállítás",
+                text: `Szia!\n\nJelszó-visszaállítást kértél. Ez egy próba email, a valós verzióban itt egy link lenne a frontendre a tokennel.\n\nToken: ${resetToken}\n\nHa nem te kérted, hagyd figyelmen kívül ezt az emailt.`
+            });
+        } catch (mailErr) {
+            console.error("Nem sikerült elküldeni a jelszó-visszaállító emailt:", mailErr);
+        }
+        return { success: true };
+    }
+ 
+    async resetPassword({ token, password }) {
+        const resetToken = await authRepository.findPasswordResetToken(token);
+ 
+        if (!resetToken) {
+            return {
+                success: false,
+                error: "Érvénytelen vagy már felhasznált token."
+            };
+        }
+ 
+        const now = new Date();
+        const expiresAt = new Date(resetToken.expires_at);
+ 
+        if (expiresAt <= now) {
+            await authRepository.deletePasswordResetToken(token);
+ 
+            return {
+                success: false,
+                error: "A token lejárt, kérj egy újat."
+            };
+        }
+ 
+        const passwordHash = await Encryption.hash(password);
+ 
+        await authRepository.updateUserPassword(resetToken.user_id, passwordHash);
+ 
+        await authRepository.deletePasswordResetToken(token);
+ 
+        return { success: true };
     }
 }
 module.exports = UserService;

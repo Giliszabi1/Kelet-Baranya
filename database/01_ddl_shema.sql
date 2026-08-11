@@ -494,21 +494,31 @@ CREATE TABLE `user_settings` (
 --
 
 DROP TABLE IF EXISTS `refresh_token`;
-
 CREATE TABLE `refresh_token` (
   `id` int(11) NOT NULL,
   `user_id` int(11) NOT NULL,
   `token` varchar(255) NOT NULL,
-
   `user_agent` text DEFAULT NULL,
   `accept_language` varchar(255) DEFAULT NULL,
   `sec_ch_ua` text DEFAULT NULL,
   `sec_ch_ua_mobile` varchar(20) DEFAULT NULL,
   `sec_ch_ua_platform` varchar(50) DEFAULT NULL,
-
   `expires_at` datetime NOT NULL,
   `created_at` datetime DEFAULT current_timestamp(),
   `revoked_at` datetime DEFAULT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=latin1 COLLATE=latin1_swedish_ci;
+
+-- --------------------------------------------------------
+-- Tábla szerkezete ehhez a táblához `password_reset_token`
+--
+
+DROP TABLE IF EXISTS `password_reset_token`;
+CREATE TABLE `password_reset_token` (
+    `id` int(11) NOT NULL,
+    `user_id` int(11) NOT NULL,
+    `token` varchar(255) NOT NULL,
+    `expires_at` datetime NOT NULL,
+    `created_at` datetime DEFAULT current_timestamp()
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1 COLLATE=latin1_swedish_ci;
 
 
@@ -738,12 +748,17 @@ ALTER TABLE `user_settings`
 --
 -- A tábla indexei `refresh_token`
 --
-
 ALTER TABLE `refresh_token`
   ADD PRIMARY KEY (`id`),
   ADD UNIQUE KEY `token` (`token`),
   ADD KEY `user_id` (`user_id`);
-
+--
+-- A tábla indexei `password_reset_token`
+--
+ALTER TABLE `password_reset_token`
+    ADD PRIMARY KEY (`id`),
+    ADD UNIQUE KEY `token` (`token`),
+    ADD KEY `user_id` (`user_id`);
 
 --
 -- A kiírt táblák AUTO_INCREMENT értéke
@@ -924,6 +939,13 @@ ALTER TABLE `refresh_token`
   MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
 
 --
+-- AUTO_INCREMENT a táblához `password_reset_token`
+--
+ALTER TABLE `password_reset_token`
+    MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
+
+
+--
 -- Megkötések a kiírt táblákhoz
 --
 
@@ -1101,6 +1123,14 @@ COMMIT;
 ALTER TABLE `refresh_token`
   ADD CONSTRAINT `refresh_token_ibfk_1`
     FOREIGN KEY (`user_id`) REFERENCES `user` (`id`);
+
+--
+-- Megkötések a táblához `password_reset_token`
+--
+ALTER TABLE `password_reset_token`
+    ADD CONSTRAINT `password_reset_token_ibfk_1`
+        FOREIGN KEY (`user_id`) REFERENCES `user` (`id`)
+        ON DELETE CASCADE;
 
 /*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;
 /*!40101 SET CHARACTER_SET_RESULTS=@OLD_CHARACTER_SET_RESULTS */;

@@ -76,6 +76,35 @@ class usersSchemas {
             })
     }).or("username", "email");
 
+    forgetPasswordSchema = Joi.object({
+        email: Joi.string()
+            .email()
+            .required()
+            .messages({
+                "string.email": "Please enter a valid email address",
+                "string.empty": "Email is required"
+            })
+    });
+
+    resetPasswordSchema = Joi.object({
+        token: Joi.string()
+            .required()
+            .messages({
+                "string.empty": "Token is required"
+            }),
+ 
+        password: Joi.string()
+            .min(8)
+            .pattern(/[A-Z]/)
+            .pattern(/[a-z]/)
+            .pattern(/[0-9]/)
+            .pattern(/^[A-Za-z0-9!@#$%^&*]+$/)
+            .required()
+            .messages({
+                "string.min": "Password must be at least 8 characters long",
+                "string.pattern.base": "Password must contain uppercase letter, lowercase letter, number, and only allowed special characters (!@#$%^&*)"
+            })
+    });
 }
 
 
