@@ -35,6 +35,14 @@ class AppConfig {
         }
         return globalRateLimitConfig;
     }
+    jwtRefreshTokenConfig() {
+        const jwtConfig={
+            JWT_SECRET: process.env.JWT_SECRET,
+            JWT_EXPIRES_IN: process.env.JWT_EXPIRES_IN,
+            REFRESH_TOKEN_EXPIRES_DAYS: process.env.REFRESH_TOKEN_EXPIRES_DAYS
+        }
+        return jwtConfig;
+    }
 }
 
 

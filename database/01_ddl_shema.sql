@@ -499,6 +499,13 @@ CREATE TABLE `refresh_token` (
   `id` int(11) NOT NULL,
   `user_id` int(11) NOT NULL,
   `token` varchar(255) NOT NULL,
+
+  `user_agent` text DEFAULT NULL,
+  `accept_language` varchar(255) DEFAULT NULL,
+  `sec_ch_ua` text DEFAULT NULL,
+  `sec_ch_ua_mobile` varchar(20) DEFAULT NULL,
+  `sec_ch_ua_platform` varchar(50) DEFAULT NULL,
+
   `expires_at` datetime NOT NULL,
   `created_at` datetime DEFAULT current_timestamp(),
   `revoked_at` datetime DEFAULT NULL

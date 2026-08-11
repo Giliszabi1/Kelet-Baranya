@@ -6,15 +6,28 @@ class UserController {
 
         this.register = this.register.bind(this);
         this.login = this.login.bind(this);
+
+        this.refresh = this.refresh.bind(this);
+        this.logout = this.logout.bind(this);
     }
 
     async register(req, res, next) {
         try {
             const { username, email, fullname, password } = req.body;
+
+            const client = { 
+                user_agent: req.headers["user-agent"] || null, 
+                accept_language: req.headers["accept-language"] || null, 
+                sec_ch_ua: req.headers["sec-ch-ua"] || null, 
+                sec_ch_ua_mobile: req.headers["sec-ch-ua-mobile"] || null, 
+                sec_ch_ua_platform: req.headers["sec-ch-ua-platform"] || null 
+            };
+
             const user = await this.authService.register({
                 username,
                 email,
                 password,
+                client
             });
 
             return res.status(201).json({
@@ -29,14 +42,23 @@ class UserController {
 
     async login(req, res, next) {
         try {
-
             const { username, email, password } = req.body;
 
+            const client = { 
+                user_agent: req.headers["user-agent"] || null, 
+                accept_language: req.headers["accept-language"] || null, 
+                sec_ch_ua: req.headers["sec-ch-ua"] || null, 
+                sec_ch_ua_mobile: req.headers["sec-ch-ua-mobile"] || null, 
+                sec_ch_ua_platform: req.headers["sec-ch-ua-platform"] || null 
+            };
+            
             const user = await this.authService.login({
                 username, 
                 email, 
-                password
+                password,
+                client
             });
+           
             if(user.success){
                 return res.status(201).json({
                     success: true,
@@ -48,6 +70,93 @@ class UserController {
             }
         } catch (err) {
             next(err);
+        }
+    }
+
+    async refresh(req, res, next) {
+        try {
+
+            const { refreshToken } = req.body;
+
+            if (!refreshToken) {
+                return res.status(400).json({
+                    success: false,
+                    message: "Refresh token is required."
+                });
+            }
+
+
+            const client = {
+                user_agent: req.headers["user-agent"] || null,
+                accept_language: req.headers["accept-language"] || null,
+                sec_ch_ua: req.headers["sec-ch-ua"] || null,
+                sec_ch_ua_mobile: req.headers["sec-ch-ua-mobile"] || null,
+                sec_ch_ua_platform: req.headers["sec-ch-ua-platform"] || null
+            };
+
+
+            const result = await this.authService.refresh({
+                token: refreshToken,
+                client
+            });
+
+
+            if (!result.success) {
+                return res.status(401).json({
+                    success: false,
+                    message: result.error
+                });
+            }
+
+
+            return res.status(200).json({
+                success: true,
+                message: "Token refreshed successfully.",
+                data: result.data
+            });
+
+        } catch (err) {
+
+            next(err);
+
+        }
+    }
+
+    async logout(req, res, next) {
+
+        try {
+
+            const { refreshToken } = req.body;
+
+            if (!refreshToken) {
+                return res.status(400).json({
+                    success: false,
+                    message: "Refresh token is required."
+                });
+            }
+
+
+            const result =
+                await this.authService.logout(refreshToken);
+
+
+            if (!result.success) {
+                return res.status(401).json({
+                    success: false,
+                    message: result.error
+                });
+            }
+
+
+            return res.status(200).json({
+                success: true,
+                message: "Logout successful."
+            });
+
+        } catch (err) {
+
+            next(err);
+
         }
     }
 

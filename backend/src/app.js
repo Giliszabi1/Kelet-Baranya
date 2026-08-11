@@ -21,14 +21,7 @@ app.use("/api", modules);
 
 
 app.use("/", (req, res)=>{
-    
-    res.send({
-        ip: req.ip,
-        userAgent: req.headers["user-agent"],
-        secChUa: req.headers["sec-ch-ua"],
-        platform: req.headers["sec-ch-ua-platform"],
-        language: req.headers["accept-language"]
-    })
+    res.send("default res")
 })
 
 module.exports = app;

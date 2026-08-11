@@ -75,7 +75,76 @@ CREATE DEFINER=`root`@`%` PROCEDURE `sp_user_settings_create` (IN `p_base_settin
     SELECT v_user_settings_id AS user_settings_id;
 END$$
 
+DROP PROCEDURE IF EXISTS `sp_refresh_token_create` $$
+CREATE PROCEDURE `sp_refresh_token_create` (
+    IN p_user_id INT(11),
+    IN p_token VARCHAR(255),
+    IN p_user_agent text,
+    IN p_accept_language VARCHAR(255),
+    IN p_sec_ch_ua text,
+    IN p_sec_ch_ua_mobile VARCHAR(20),
+    IN p_sec_ch_ua_platform VARCHAR(50),
+    IN p_expires_at DATETIME
+)
+BEGIN
+    DECLARE v_refresh_token_id INT;
 
+    INSERT INTO `refresh_token` (
+        `user_id`,
+        `token`,
+        `user_agent`,
+        `accept_language`,
+        `sec_ch_ua`,
+        `sec_ch_ua_mobile`,
+        `sec_ch_ua_platform`,
+        `expires_at`
+    )
+    VALUES (
+        p_user_id,
+        p_token,
+        p_user_agent,
+        p_accept_language,
+        p_sec_ch_ua,
+        p_sec_ch_ua_mobile,
+        p_sec_ch_ua_platform,
+        p_expires_at
+    );
+
+    SET v_refresh_token_id = LAST_INSERT_ID();
+
+    SELECT v_refresh_token_id AS refresh_token_id;
+END $$
+
+DROP PROCEDURE IF EXISTS `sp_refresh_token_get` $$
+CREATE PROCEDURE `sp_refresh_token_get` (
+    IN p_token VARCHAR(255)
+)
+BEGIN
+    SELECT
+        rt.id,
+        rt.user_id,
+        rt.token,
+        rt.expires_at,
+        rt.revoked_at,
+        u.username,
+        u.email,
+        u.type
+    FROM `refresh_token` rt
+    INNER JOIN `user` u ON u.id = rt.user_id
+    WHERE rt.token = p_token
+    LIMIT 1;
+END $$
+
+DROP PROCEDURE IF EXISTS `sp_refresh_token_revoke` $$
+CREATE PROCEDURE `sp_refresh_token_revoke` (
+    IN p_token VARCHAR(500)
+)
+BEGIN
+    UPDATE `refresh_token`
+    SET `revoked_at` = CURRENT_TIMESTAMP()
+    WHERE `token` = p_token
+      AND `revoked_at` IS NULL;
+END $$
 
 -- =====================================================================
 -- CREATE
