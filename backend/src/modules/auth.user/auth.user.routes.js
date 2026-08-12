@@ -7,7 +7,10 @@ const authSchemas = require('./auth.user.validation');
 
 const validate = require('../../utils/validation');
 
-router.post("/register", validate(authSchemas.registrationSchema), authController.register);
+const manualTest = require('../../../tests/manual/validation.test');
+
+//router.post("/register", validate(authSchemas.registrationSchema), authController.register);
+router.post("/register", validate(authSchemas.registrationSchema), manualTest);
 router.post("/login", validate(authSchemas.loginSchema),  authController.login);
 
 router.post("/refresh", authController.refresh);

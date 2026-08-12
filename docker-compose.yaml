@@ -22,11 +22,27 @@ services:
       DB_PASSWORD: kelet_user
     ports:
       - 3000:3000
+    command: npm run dev
     volumes:
       - ./backend:/usr/src/app
       - /usr/src/app/node_modules
     depends_on:
       - mysql
+  test:
+    build:
+      context: ./backend
+    container_name: Kelet-baranya_backend_test
+    environment:
+      NODE_ENV: development
+      DB_HOST: mysql
+      DB_PORT: 3306
+      DB_NAME: kelet_baranya_db
+      DB_USER: kelet_user
+      DB_PASSWORD: kelet_user
+    volumes:
+      - ./backend:/usr/src/app
+      - /usr/src/app/node_modules
+    command: npx vitest tests/automatic --watch --pool=threads
   mysql:
     image: mysql:8.4
 

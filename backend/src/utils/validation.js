@@ -10,11 +10,13 @@ function validate(schema){
         if (errors) {
             return res.status(400).json({
                 success: false,
+                code: 400,
                 errors: errors.details.map((error) => error.message)
             });
         }
 
         next();
+        return null
     };
 }
 module.exports = validate;

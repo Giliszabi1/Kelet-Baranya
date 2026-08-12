@@ -7,17 +7,17 @@ class usersSchemas {
             .max(32)
             .required()
             .messages({
-                "string.empty": "Username is required",
-                "string.min": "Username must be at least 5 characters long",
-                "string.max": "Username cannot exceed 32 characters"
+                "string.empty": "USERNAME_REQUIRED",
+                "string.min": "USERNAME_TOO_SHORT",
+                "string.max": "USERNAME_TOO_LONG"
             }),
 
         email: Joi.string()
             .email()
             .required()
             .messages({
-                "string.email": "Please enter a valid email address",
-                "string.empty": "Email is required"
+                "string.empty": "EMAIL_REQUIRED",
+                "string.email": "EMAIL_INVALID"
             }),
 
         fullname: Joi.string()
@@ -26,9 +26,9 @@ class usersSchemas {
             .max(64)
             .optional()
             .messages({
-                "string.pattern.base": "Full name must contain at least a first name and a last name, and can only contain letters",
-                "string.min": "Full name must be at least 5 characters long",
-                "string.max": "Full name cannot exceed 64 characters"
+                "string.pattern.base": "FULLNAME_INVALID",
+                "string.min": "FULLNAME_TOO_SHORT",
+                "string.max": "FULLNAME_TOO_LONG"
             }),
 
         password: Joi.string()
@@ -37,10 +37,13 @@ class usersSchemas {
             .pattern(/[a-z]/)
             .pattern(/[0-9]/)
             .pattern(/^[A-Za-z0-9!@#$%^&*]+$/)
+            .invalid(Joi.ref("username"))
             .required()
             .messages({
-                "string.min": "Password must be at least 8 characters long",
-                "string.pattern.base": "Password must contain uppercase letter, lowercase letter, number, and only allowed special characters (!@#$%^&*)"
+                "string.empty": "PASSWORD_REQUIRED",
+                "string.min": "PASSWORD_TOO_SHORT",
+                "string.pattern.base": "PASSWORD_INVALID",
+                "any.invalid": "USERNAME_PASSWORD_IDENTICAL"
             })
     });
 
@@ -50,16 +53,16 @@ class usersSchemas {
             .min(5)
             .max(32)
             .messages({
-                "string.empty": "Username is required",
-                "string.min": "Username must be at least 5 characters long",
-                "string.max": "Username cannot exceed 32 characters"
+                "string.empty": "USERNAME_REQUIRED",
+                "string.min": "USERNAME_TOO_SHORT",
+                "string.max": "USERNAME_TOO_LONG"
             }),
 
         email: Joi.string()
             .email()
             .messages({
-                "string.email": "Please enter a valid email address",
-                "string.empty": "Email is required"
+                "string.empty": "EMAIL_REQUIRED",
+                "string.email": "EMAIL_INVALID"
             }),
 
 
@@ -71,18 +74,23 @@ class usersSchemas {
             .pattern(/^[A-Za-z0-9!@#$%^&*]+$/)
             .required()
             .messages({
-                "string.min": "Password must be at least 8 characters long",
-                "string.pattern.base": "Password must contain uppercase letter, lowercase letter, number, and only allowed special characters (!@#$%^&*)"
+                "string.empty": "PASSWORD_REQUIRED",
+                "string.min": "PASSWORD_TOO_SHORT",
+                "string.pattern.base": "PASSWORD_INVALID"
             })
-    }).or("username", "email");
+        })
+    .or("username", "email")
+    .messages({
+        "object.missing": "USERNAME_OR_EMAIL_REQUIRED"
+    });
 
     forgetPasswordSchema = Joi.object({
         email: Joi.string()
             .email()
             .required()
             .messages({
-                "string.email": "Please enter a valid email address",
-                "string.empty": "Email is required"
+                "string.empty": "EMAIL_REQUIRED",
+                "string.email": "EMAIL_INVALID"
             })
     });
 
@@ -90,7 +98,7 @@ class usersSchemas {
         token: Joi.string()
             .required()
             .messages({
-                "string.empty": "Token is required"
+                "string.empty": "RESET_TOKEN_REQUIRED"
             }),
  
         password: Joi.string()
@@ -101,8 +109,9 @@ class usersSchemas {
             .pattern(/^[A-Za-z0-9!@#$%^&*]+$/)
             .required()
             .messages({
-                "string.min": "Password must be at least 8 characters long",
-                "string.pattern.base": "Password must contain uppercase letter, lowercase letter, number, and only allowed special characters (!@#$%^&*)"
+                "string.empty": "PASSWORD_REQUIRED",
+                "string.min": "PASSWORD_TOO_SHORT",
+                "string.pattern.base": "PASSWORD_INVALID"
             })
     });
 }

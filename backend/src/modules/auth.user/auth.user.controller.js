@@ -35,8 +35,9 @@ class UserController {
 
             return res.status(201).json({
                 success: true,
+                code: 201,
                 message: "User registered successfully.",
-                data: user,
+                data: user
             });
         } catch (err) {
             next(err);
@@ -63,8 +64,9 @@ class UserController {
             });
            
             if(user.success){
-                return res.status(201).json({
+                return res.status(200).json({
                     success: true,
+                    code: 200,
                     message: "User login successfully.",
                     data: user.data,
                 });
@@ -84,7 +86,8 @@ class UserController {
             if (!refreshToken) {
                 return res.status(400).json({
                     success: false,
-                    message: "Refresh token is required."
+                    code: 400,
+                    errors: ["REFRESH_TOKEN_REQUIRED."]
                 });
             }
 
@@ -104,12 +107,14 @@ class UserController {
             if (!result.success) {
                 return res.status(401).json({
                     success: false,
-                    message: result.error
+                    code: 401,
+                    errors: [result.error]
                 });
             }
 
             return res.status(200).json({
                 success: true,
+                code: 200,
                 message: "Token refreshed successfully.",
                 data: result.data
             });
@@ -126,7 +131,8 @@ class UserController {
             if (!refreshToken) {
                 return res.status(400).json({
                     success: false,
-                    message: "Refresh token is required."
+                    code: 400,
+                    errors: ["Refresh token is required."]
                 });
             }
 
@@ -135,12 +141,14 @@ class UserController {
             if (!result.success) {
                 return res.status(401).json({
                     success: false,
-                    message: result.error
+                    code: 401,
+                    errors: [result.error]
                 });
             }
 
             return res.status(200).json({
                 success: true,
+                code: 200,
                 message: "Logout successful."
             });
 
@@ -157,6 +165,7 @@ class UserController {
  
             return res.status(200).json({
                 success: true,
+                code: 200,
                 message: "If the provided email address exists in our system, we've sent a password reset email."
             });
         } catch (err) {
@@ -173,12 +182,14 @@ class UserController {
             if (!result.success) {
                 return res.status(400).json({
                     success: false,
+                    code: 400,
                     message: result.error
                 });
             }
  
             return res.status(200).json({
                 success: true,
+                code: 200,
                 message: "Password has been reset successfully."
             });
  
