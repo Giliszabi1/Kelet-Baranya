@@ -46,7 +46,4 @@ class usersSchemas {
 
 }
 
-
-
-
 module.exports = new usersSchemas();

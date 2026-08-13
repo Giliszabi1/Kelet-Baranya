@@ -2,9 +2,9 @@ const jwtConfig = require('../../config/app.config').jwtRefreshTokenConfig();
 
 const authRepository  = require('./auth.user.repository');
 
-const Encryption = require("../../utils/password")
-const JWT = require("../../utils/jwt");
-const RefreshToken = require('../../utils/refreshToken');
+const Encryption = require("../../shared/utils/password")
+const JWT = require("../../shared/utils/jwt");
+const RefreshToken = require('../../shared/utils/refreshToken');
 
 const transporter = require('../../infrastructure/mail/smtp.mail');
 const smtpConfig = require('../../config/smtp.config');
@@ -195,9 +195,10 @@ class UserService {
         const expiresAt = new Date();
         expiresAt.setMinutes(expiresAt.getMinutes() + Number(process.env.PASSWORD_RESET_TOKEN_EXPIRES_MINUTES || 30));
  
-        await authRepository.createPasswordResetToken({
+        await authRepository.createToken({
             user_id: user.id,
             token: resetToken,
+            type: "password",
             expires_at: expiresAt
         });
  
@@ -215,7 +216,7 @@ class UserService {
     }
  
     async resetPassword({ token, password }) {
-        const resetToken = await authRepository.findPasswordResetToken(token);
+        const resetToken = await authRepository.findToken(token);
  
         if (!resetToken) {
             return {
@@ -228,7 +229,7 @@ class UserService {
         const expiresAt = new Date(resetToken.expires_at);
  
         if (expiresAt <= now) {
-            await authRepository.deletePasswordResetToken(token);
+            await authRepository.deleteToken(token);
  
             return {
                 success: false,
@@ -240,7 +241,7 @@ class UserService {
  
         await authRepository.updateUserPassword(resetToken.user_id, passwordHash);
  
-        await authRepository.deletePasswordResetToken(token);
+        await authRepository.deleteToken(token);
  
         return { success: true };
     }

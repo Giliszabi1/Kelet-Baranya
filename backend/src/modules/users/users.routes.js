@@ -5,7 +5,7 @@ const usersController = require("./users.controller");
 const usersSchemas = require('./users.validation');
 
 
-const validate = require('../../utils/validation');
+const validate = require('../../shared/utils/validation');
 
 
 router.post("/register", validate(usersSchemas.registrationSchema), usersController.register);

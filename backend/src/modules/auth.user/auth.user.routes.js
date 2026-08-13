@@ -5,12 +5,12 @@ const authController = require("./auth.user.controller");
 const authSchemas = require('./auth.user.validation');
 
 
-const validate = require('../../utils/validation');
+const validate = require('../../shared/utils/validation');
 
 const manualTest = require('../../../tests/manual/validation.test');
 
-//router.post("/register", validate(authSchemas.registrationSchema), authController.register);
-router.post("/register", validate(authSchemas.registrationSchema), manualTest);
+//router.post("/register", validate(authSchemas.registrationSchema), manualTest);
+router.post("/register", validate(authSchemas.registrationSchema), authController.register);
 router.post("/login", validate(authSchemas.loginSchema),  authController.login);
 
 router.post("/refresh", authController.refresh);

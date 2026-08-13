@@ -1,6 +1,6 @@
 const jwt = require("jsonwebtoken");
 
-const jwtConfig = require('../config/app.config').jwtRefreshTokenConfig();
+const jwtConfig = require('../../config/app.config').jwtRefreshTokenConfig();
 
 const JWT_SECRET = jwtConfig.JWT_SECRET;
 const JWT_EXPIRES_IN = jwtConfig.JWT_EXPIRES_IN || "15m";

@@ -1,6 +1,6 @@
 const usersRepository  = require('./users.repository');
 
-const Encryption = require("../../utils/password")
+const Encryption = require("../../shared/utils/password")
 class UserService {
     
     async register({username, email, password}) {

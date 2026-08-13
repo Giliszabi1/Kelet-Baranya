@@ -42,7 +42,7 @@ services:
     volumes:
       - ./backend:/usr/src/app
       - /usr/src/app/node_modules
-    command: npx vitest tests/automatic --watch --pool=threads
+    command: npx vitest tests/automatic --watch --pool=threads --reporter=verbose
   mysql:
     image: mysql:8.4
 

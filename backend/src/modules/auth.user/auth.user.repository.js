@@ -27,18 +27,18 @@ class usersRepository {
         return answer;
     }
 
-    async createPasswordResetToken({ user_id, token, expires_at }) {
-        const [answer] = await DB_CONNECT.query(`CALL sp_password_reset_token_create(?, ?, ?);`, [user_id, token, expires_at]);
+    async createToken({ user_id, token, type, expires_at }) {
+        const [answer] = await DB_CONNECT.query(`CALL sp_user_token_create(?, ?, ?, ?);`, [user_id, token, type, expires_at]);
         return answer;
     }
  
-    async findPasswordResetToken(token) {
-        const [answer] = await DB_CONNECT.query(`CALL sp_password_reset_token_get(?)`, [token]);
+    async findToken(token) {
+        const [answer] = await DB_CONNECT.query(`CALL sp_user_token_get(?)`, [token]);
         return answer[0][0];
     }
  
-    async deletePasswordResetToken(token) {
-        const [answer] = await DB_CONNECT.query(`CALL sp_password_reset_token_delete(?)`, [token]);
+    async deleteToken(token) {
+        const [answer] = await DB_CONNECT.query(`CALL sp_user_token_delete(?)`, [token]);
         return answer;
     }
  
