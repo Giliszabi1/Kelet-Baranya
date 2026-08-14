@@ -1,0 +1,371 @@
+//enums
+
+Enum enum_role {
+  user
+  organizer
+  admin
+}
+
+Enum enum_friend_status {
+  pending
+  accepted
+  declined
+}
+
+Enum enum_approved_status {
+  pending
+  approved
+  denied
+}
+
+Enum enum_rsvp_status {
+  interested
+  going
+  not_going
+}
+
+Enum enum_image_type {
+  profile
+  location
+  event
+  group
+  category
+}
+
+Enum enum_unit_system {
+  metric
+  imperial
+}
+
+//user
+
+Table user {
+  id int [pk, increment]
+  username varchar(25) [unique, not null]
+  password_hash varchar(255) [not null]
+  email varchar(320) [unique, not null]
+  created_at datetime [default: `now()`]
+  updated_at datetime [default: null]
+  deleted_at datetime [default: null]
+  isDeleted bool [default: 0]
+}
+
+Table userInfo {
+  id int [pk, increment]
+  user_id int [ref: - user.id, unique, not null]
+  image_id int [ref: - image.id, default: null] //null means no image
+  user_settings_id int [ref: - user_settings.id]
+  created_at datetime [default: `now()`]
+  updated_at datetime [default: null]
+  isDeleted bool [default: 0]
+}
+
+Table adminInfo {
+  id int [pk, increment]
+  user_id int [ref: - user.id, unique, not null]
+  admin_settings_id int [ref: - admin_settings.id]
+  created_at datetime [default: `now()`]
+  updated_at datetime [default: null]
+  isDeleted bool [default: 0]
+}
+
+Table organizerInfo {
+  id int [pk, increment]
+  user_id int [ref: - user.id, unique, not null]
+  image_id int [ref: - image.id, default: null] //null means no image
+  bio text
+  rating decimal(2, 1) [default: 0.0]
+  organizer_settings_id int [ref: - organizer_settings.id]
+  created_at datetime [default: `now()`]
+  updated_at datetime [default: null]
+  isDeleted bool [default: 0]
+}
+
+Table organizer_review {
+  id int [pk, increment]
+  reviewer_id int [Ref: > user.id]
+  reviewed_id int [Ref: > user.id]
+  rating tinyint [default: 0.0]
+  comment text
+  created_at datetime [default: `now()`]
+  updated_at datetime [default: null]
+  isDeleted bool [default: 0]
+
+  indexes {
+    (reviewer_id, reviewed_id) [unique]
+  }
+}
+
+//settings
+
+Table base_settings {
+  id int [pk, increment]
+  language varchar(10) [default: 'hu']
+  unit_system enum_unit_system [default: 'metric']
+  push_notification tinyint [default: 1]
+  email_notification tinyint [default: 1]
+  //?location
+  dark_mode tinyint [default: 0]
+  updated_at datetime [default: null]
+}
+
+Table user_settings {
+  id int [pk, increment]
+  settings_id int [ref: - base_settings.id, not null]
+  event_reminder tinyint [default: 1]
+  new_event_notification tinyint [default: 1]
+  //more settings
+  updated_at datetime [default: null]
+}
+
+Table admin_settings {
+  id int [pk, increment]
+  settings_id int [ref: - base_settings.id, not null]
+  event_reminder tinyint [default: 1]
+  new_event_notification tinyint [default: 1]
+  //more settings
+  updated_at datetime [default: null]
+}
+
+Table organizer_settings {
+  id int [pk, increment]
+  settings_id int [ref: - base_settings.id, not null]
+  event_approved_notification tinyint [default: 1]
+  //more settings
+  updated_at datetime [default: null]
+}
+
+Table user_favourite_location {
+  id int [pk, increment]
+  user_id int [ref: > user.id, not null]
+  location_id int [ref: > location.id, not null]
+  created_at datetime [default: `now()`]
+
+  indexes {
+    (user_id, location_id) [unique]
+  }
+}
+
+Table user_favourite_event {
+  id int [pk, increment]
+  user_id int [ref: > user.id, not null]
+  event_id int [ref: > event.id, not null]
+  created_at datetime [default: `now()`]
+
+  indexes {
+    (user_id, event_id) [unique]
+  }
+}
+//friend
+
+Table friend_request {
+  id int [pk, increment]
+  sender_id int [ref: > user.id, not null]
+  receiver_id int [ref: > user.id, not null]
+  status enum_friend_status [default: 'pending']
+  created_at datetime [default: `now()`]
+  responded_at datetime [default: null]
+
+  indexes {
+    (sender_id, receiver_id) [unique]
+  }
+}
+
+//location
+
+Table location {
+  id int [pk, increment]
+  name varchar(50) [not null, unique]
+  address varchar(255)
+  description text
+  rating decimal(2,1) [default: 0.0]
+  group_id int [ref: > group.id]
+  created_by_user_id int [ref: > user.id, not null]
+  approved_status enum_approved_status [default: 'pending']
+  created_at datetime [default: `now()`]
+  updated_at datetime [default: null]
+  deleted_at datetime [default: null]
+  isDeleted bool [default: 0]
+}
+
+Table location_category {
+  id int [pk, increment]
+  location_id int [ref: > location.id, not null]
+  category_id int [ref: > category.id, not null]
+
+  indexes {
+    (location_id, category_id) [unique]
+  }
+}
+
+Table location_review {
+  id int [pk, increment]
+  user_id int [ref: > user.id, not null]
+  location_id int [ref: > location.id, not null]
+  rating tinyint [not null]
+  comment text
+  created_at datetime [default: `now()`]
+  updated_at datetime [default: null]
+  isDeleted bool [default: 0]
+
+  indexes {
+    (user_id, location_id) [unique]
+  }
+}
+
+Table location_image {
+  id int [pk, increment]
+  location_id int [ref: > location.id, not null]
+  image_id int [ref: > image.id, not null]
+  sort_order int [default: 0]
+}
+
+//event
+
+Table event {
+  id int [pk, increment]
+  title varchar(75) [not null]
+  location_id int [ref: > location.id, not null]
+  start_time datetime [not null]
+  end_time datetime
+  description text
+  group_id int [ref: > group.id]
+  max_participants int
+  rating decimal(2,1) [default: 0.0]
+  repeat_id int [ref: > event_repeat.id, default: null]
+  approved_status enum_approved_status [default: 'pending']
+  created_by_user_id int [ref: > user.id, not null]
+  created_at datetime [default: `now()`]
+  updated_at datetime [default: null]
+  deleted_at datetime [default: null]
+  isDeleted bool [default: 0]
+}
+
+Table event_category {
+  id int [pk, increment]
+  event_id int [ref: > event.id, not null]
+  category_id int [ref: > category.id, not null]
+
+  indexes {
+    (event_id, category_id) [unique]
+  }
+}
+
+Table event_review {
+  id int [pk, increment]
+  user_id int [ref: > user.id, not null]
+  event_id int [ref: > event.id, not null]
+  rating tinyint [not null]
+  comment text
+  created_at datetime [default: `now()`]
+  updated_at datetime [default: null]
+  isDeleted bool [default: 0]
+
+  indexes {
+    (user_id, event_id) [unique]
+  }
+}
+
+Table event_participant {
+  id int [pk, increment]
+  user_id int [ref: > user.id, not null]
+  event_id int [ref: > event.id, not null]
+  status enum_rsvp_status [default: 'interested']
+  created_at datetime [default: `now()`]
+  updated_at datetime [default: null]
+
+  indexes {
+    (user_id, event_id) [unique]
+  }
+}
+
+Table event_image {
+  id int [pk, increment]
+  event_id int [ref: > event.id, not null]
+  image_id int [ref: > image.id, not null]
+  sort_order int [default: 0]
+}
+
+Table event_repeat {
+  id int [pk, increment]
+  created_by_user_id int [ref: > user.id, not null]
+  event_id int [ref: > event.id, not null]
+  interval_days int [not null]
+  first_event date
+  nd_date date [default: null] // null = no end
+  created_at datetime [default: `now()`]
+  updated_at datetime [default: null]
+  deleted_at datetime [default: null]
+  isDeleted bool [default: 0]
+
+  indexes {
+    (created_by_user_id, event_id) [unique]
+  }
+}
+
+//group
+
+Table group {
+  id int [pk, increment]
+  name varchar(50) [not null]
+  image_id int [ref: - image.id]
+  description text
+  //member_ids_JSON text
+  created_by int [ref: - user.id, not null]
+  created_at datetime [default: `now()`]
+  updated_at datetime [default: null]
+  deleted_at datetime [default: null]
+  isDeleted bool [default: 0]
+}
+
+Table group_member {
+  id int [pk, increment]
+  user_id int [ref: > user.id, not null]
+  group_id int [ref: > group.id, not null]
+  created_at datetime [default: `now()`]
+  joined_at datetime [default: `now()`]
+
+  indexes {
+    (user_id, group_id) [unique]
+  }
+}
+
+//image and category
+
+Table category {
+  id int [pk, increment]
+  name varchar(50)
+  image_id int [ref: > image.id]
+}
+
+Table image {
+  id int [pk, increment]
+  name varchar(25) [not null]
+  path text [not null, unique]
+  type enum_image_type [not null]
+  created_by int [ref: > user.id]
+  created_at datetime [default: `now()`]
+  isDeleted bool [default: 0]
+}
+
+//weather
+
+Table current_weather {
+  id int [pk, increment]
+  city_name varchar(25)
+  weather_main varchar(15)
+  main_temp decimal(4, 2)
+  main_temp_feels_like decimal(4, 2)
+  visibility int
+  wind_speed decimal(4, 2)
+}
+
+Table forecast_weather {
+  id int [pk, increment]
+  city_name varchar(25)
+  weather_main varchar(15)
+  main_temp decimal(4, 2)
+  main_temp_feels_like decimal(4, 2)
+  visibility int
+  wind_speed decimal(4, 2)
+}
