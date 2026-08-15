@@ -7,8 +7,9 @@
   "type": "commonjs",
   "main": "server.js",
   "scripts": {
-    "test": "vitest tests/automatic --watch",
+    "test": "dotenv -e env/test.env -- vitest tests/automatic --watch --pool=threads --reporter=verbose",
     "test:run": "vitest run tests/automatic",
+    "server_test": "nodemon  --legacy-watch -r dotenv/config src/server.js dotenv_config_path=env/test.env",
     "dev": "nodemon  --legacy-watch -r dotenv/config src/server.js dotenv_config_path=env/local.env"
   },
   "dependencies": {
@@ -23,6 +24,7 @@
     "nodemailer": "^9.0.5"
   },
   "devDependencies": {
+    "dotenv-cli": "^11.0.0",
     "nodemon": "^3.1.14",
     "vitest": "^4.1.10"
   }
