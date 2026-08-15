@@ -422,6 +422,7 @@ CREATE TABLE `user` (
   `username` varchar(25) NOT NULL,
   `password_hash` varchar(255) NOT NULL,
   `email` varchar(255) NOT NULL,
+  `email_verified` tinyint DEFAULT 0,
   `type` VARCHAR(255) DEFAULT "user",
   `created_at` datetime DEFAULT current_timestamp(),
   `updated_at` datetime DEFAULT NULL,

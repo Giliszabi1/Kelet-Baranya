@@ -21,6 +21,10 @@ class usersRepository {
         const [answer] = await DB_CONNECT.query(`CALL sp_refresh_token_get(?)`, [token]);
         return answer[0][0];
     }
+    async findUserById(userId) {
+        const [answer] = await DB_CONNECT.query(`CALL sp_user_get_by_id(?)`, [userId]);
+        return answer[0][0];
+    }
     
     async revokeRefreshToken(token) {
         const [answer] = await DB_CONNECT.query(`CALL sp_refresh_token_revoke(?)`, [token]);
@@ -44,6 +48,11 @@ class usersRepository {
  
     async updateUserPassword(user_id, password_hash) {
         const [answer] = await DB_CONNECT.query(`CALL sp_user_update_password(?, ?)`, [user_id, password_hash]);
+        return answer;
+    }
+
+    async confirmEmail(user_id) {
+        const [answer] = await DB_CONNECT.query(`CALL sp_user_confirm_email(?)`, [user_id]);
         return answer;
     }
 }

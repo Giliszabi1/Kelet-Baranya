@@ -10,7 +10,7 @@ class JWT {
         return jwt.sign(
             {
                 userId: user.id,
-                role: user.type || "user"
+                role: user.type
             },
             JWT_SECRET,
             {

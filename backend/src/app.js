@@ -18,7 +18,6 @@ app.use(rateLimit(globalLimit))
 
 app.use("/api", modules);
 
-
 app.use("/", (req, res)=>{
     res.send("default res")
 })

@@ -19,6 +19,78 @@
 
 DELIMITER $$
 
+DROP PROCEDURE IF EXISTS sp_user_get_by_id;
+CREATE PROCEDURE sp_user_get_by_id(IN p_user_id BIGINT)
+BEGIN
+    DECLARE v_email_verified TINYINT DEFAULT NULL;
+
+    SELECT email_verified
+    INTO v_email_verified
+    FROM `user`
+    WHERE id = p_user_id
+    LIMIT 1;
+
+    IF v_email_verified IS NULL THEN
+
+        SELECT
+            0 AS success,
+            'A felhasználó nem található.' AS message;
+
+    ELSEIF v_email_verified = 0 THEN
+
+        SELECT
+            0 AS success,
+            'A felhasználó nem erősítette meg az email címét.' AS message;
+
+    ELSE
+
+        SELECT
+            1 AS success,
+            u.id AS user_id,
+            u.username,
+            u.email,
+            u.type,
+            u.email_verified,
+
+            ui.id AS user_info_id,
+            ui.image_id,
+            ui.user_settings_id,
+
+            us.id AS user_settings_id,
+            us.settings_id,
+            us.event_reminder,
+            us.new_event_notification,
+
+            bs.id AS base_settings_id,
+            bs.language,
+            bs.unit_system,
+            bs.push_notification,
+            bs.email_notification,
+            bs.dark_mode
+
+        FROM `user` u
+
+        LEFT JOIN `userInfo` ui
+            ON ui.user_id = u.id
+
+        LEFT JOIN `user_settings` us
+            ON us.id = ui.user_settings_id
+
+        LEFT JOIN `base_settings` bs
+            ON bs.id = us.settings_id
+
+        WHERE u.id = p_user_id;
+
+    END IF;
+
+END$$
+
+
+CREATE PROCEDURE `sp_user_confirm_email`(IN `p_user_id` INT)
+BEGIN
+    UPDATE `user` SET `email_verified` = 1 WHERE `id` = `p_user_id`;
+END$$
+
 DROP PROCEDURE IF EXISTS `sp_base_settings_create`$$
 CREATE DEFINER=`root`@`%` PROCEDURE `sp_base_settings_create` (IN `p_user_id` INT(11))   BEGIN
     DECLARE v_base_settings_id INT;
@@ -253,10 +325,10 @@ CREATE DEFINER=`root`@`localhost` PROCEDURE `sp_user_create` (IN `p_username` VA
     SELECT `id`, `username`, `password_hash`, `email`, `type` FROM `user` WHERE id = LAST_INSERT_ID();
 END$$
 
-
 -- =====================================================================
 -- READ - egy felhasználó lekérdezése ID alapján
 -- =====================================================================
+/*
 DROP PROCEDURE IF EXISTS `sp_user_get_by_id` $$
 CREATE PROCEDURE `sp_user_get_by_id` (
     IN p_id INT
@@ -285,7 +357,7 @@ BEGIN
     FROM `user`
     WHERE `id` = p_id;
 END $$
-
+*/
 -- sp
 
 DROP PROCEDURE IF EXISTS `sp_user_login` $$

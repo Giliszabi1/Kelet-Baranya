@@ -6,12 +6,16 @@ class UserController {
 
         this.register = this.register.bind(this);
         this.login = this.login.bind(this);
-
+        
         this.refresh = this.refresh.bind(this);
         this.logout = this.logout.bind(this);
 
+        this.me = this.me.bind(this);
+        
         this.forgetPassword = this.forgetPassword.bind(this);
         this.resetPassword = this.resetPassword.bind(this);
+
+        this.confirmEmail = this.confirmEmail.bind(this);
     }
 
     async register(req, res, next) {
@@ -157,6 +161,32 @@ class UserController {
         }
     }
 
+    async me(req, res, next) {
+        try {
+            const userId = req.user.id;
+ 
+            const result = await this.authService.me(userId);
+ 
+            if (!result.success) {
+                return res.status(404).json({
+                    success: false,
+                    code: 404,
+                    errors: [result.error]
+                });
+            }
+ 
+            return res.status(200).json({
+                success: true,
+                code: 200,
+                message: "Account information retrieved successfully.",
+                data: result.data
+            });
+ 
+        } catch (err) {
+            next(err);
+        }
+    }
+
     async forgetPassword(req, res, next) {
         try {
             const { email } = req.body;
@@ -193,6 +223,32 @@ class UserController {
                 message: "Password has been reset successfully."
             });
  
+        } catch (err) {
+            next(err);
+        }
+    }
+
+    async confirmEmail(req, res, next) {
+        try {
+            const token = req.query.token;
+            console.log(token);
+
+            const result = await this.authService.confirmEmail({ token: token });
+
+            if (!result.success) {
+                return res.status(400).json({
+                    success: false,
+                    code: 400,
+                    message: result.error
+                });
+            }
+
+            return res.status(200).json({
+                success: true,
+                code: 200,
+                message: "Email cím sikeresen megerősítve."
+            });
+
         } catch (err) {
             next(err);
         }

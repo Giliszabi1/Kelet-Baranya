@@ -30,6 +30,14 @@ class usersSchemas {
         "object.missing": "USERNAME_OR_EMAIL_REQUIRED"
     });
 
+    refreshSchema = Joi.object({
+        refreshToken: tokenValidation
+    });
+
+    logoutSchema = Joi.object({
+        refreshToken: tokenValidation
+    });
+
     forgetPasswordSchema = Joi.object({
         email: emailValidation.required()
     });
@@ -38,6 +46,10 @@ class usersSchemas {
         token: tokenValidation.required(),
         password: passwordValidation.required()
     });
+
+    confirmEmailSchema = Joi.object({
+        token: tokenValidation.empty("").required()
+    })
 }
 
 module.exports = new usersSchemas();

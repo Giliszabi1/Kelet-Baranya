@@ -4,10 +4,10 @@ const authRepository  = require('./auth.user.repository');
 
 const Encryption = require("../../shared/utils/password")
 const JWT = require("../../shared/utils/jwt");
-const RefreshToken = require('../../shared/utils/refreshToken');
+const Token = require('../../shared/utils/token');
 
-const transporter = require('../../infrastructure/mail/smtp.mail');
-const smtpConfig = require('../../config/smtp.config');
+const EmailService = require('./auth.user.email.service');
+
 
 class UserService {
     
@@ -18,8 +18,8 @@ class UserService {
 
         const user = await authRepository.register(username, email, passwordHash);
 
-        const accessToken = JWT.generateAccessToken({ id: user.id, type: user.type || "user" }); 
-        const refreshToken = RefreshToken.generate(); 
+        const accessToken = JWT.generateAccessToken({ id: user.id, type: user.type || "user" });
+        const refreshToken = Token.generate(); 
 
         const expiresAt = new Date(); 
         expiresAt.setDate(expiresAt.getDate() + Number(jwtConfig.REFRESH_TOKEN_EXPIRES_DAYS || 30)); 
@@ -33,7 +33,25 @@ class UserService {
             sec_ch_ua_mobile: client.sec_ch_ua_mobile, 
             sec_ch_ua_platform: client.sec_ch_ua_platform, 
             expires_at: expiresAt
-        }); 
+        });
+
+        const newRegistrationToken = Token.generate();
+
+        const registrationExpiresAt = new Date(Date.now() + 60 * 60 * 1000)
+            .toLocaleString('sv-SE', {timeZone: "Europe/Budapest"}); 
+
+        const registrationToken = await authRepository.createToken({
+            user_id: user.id, 
+            token: newRegistrationToken, 
+            type: "register",
+            expires_at: registrationExpiresAt
+        });
+
+        await EmailService.register({
+            username: username, 
+            email: email, 
+            token: newRegistrationToken
+        })
 
         return { 
             id: user.id, 
@@ -68,7 +86,7 @@ class UserService {
             type: user.type || "user"
         });
 
-        const refreshToken = RefreshToken.generate();
+        const refreshToken = Token.generate();
 
         const expiresAt = new Date();
         expiresAt.setDate( expiresAt.getDate() + Number(jwtConfig.REFRESH_TOKEN_EXPIRES_DAYS || 30) );
@@ -135,7 +153,7 @@ class UserService {
 
         await authRepository.revokeRefreshToken(token);
 
-        const newRefreshToken = RefreshToken.generate();
+        const newRefreshToken = Token.generate();
 
         const newExpiresAt = new Date();
         newExpiresAt.setDate(newExpiresAt.getDate() + Number(process.env.REFRESH_TOKEN_EXPIRES_DAYS || 30));
@@ -180,6 +198,25 @@ class UserService {
     
         return {
             success: true
+        };
+    }
+
+    async me(userId) {
+        const user = await authRepository.findUserById(userId);
+ 
+        if (!user) {
+            return {
+                success: false,
+                error: "A felhasználó nem található."
+            };
+        }
+ 
+        return {
+            success: true,
+            data: {
+                id: user.id,
+                user: user
+            }
         };
     }
 
@@ -243,6 +280,42 @@ class UserService {
  
         await authRepository.deleteToken(token);
  
+        return { success: true };
+    }
+
+    async confirmEmail({ token }) {
+        const confirmToken = await authRepository.findToken(token);
+        console.log(confirmToken);
+        if (!confirmToken) {
+            return {
+                success: false,
+                error: "Érvénytelen vagy már felhasznált token."
+            };
+        }
+    
+        if (confirmToken.token_type !== "register") {
+            return {
+                success: false,
+                error: "Érvénytelen token típus."
+            };
+        }
+    
+        const now = new Date();
+        const expiresAt = new Date(confirmToken.expires_at);
+    
+        if (expiresAt <= now) {
+            await authRepository.deleteToken(token);
+        
+            return {
+                success: false,
+                error: "A token lejárt, kérj egy új megerősítő emailt."
+            };
+        }
+    
+        await authRepository.confirmEmail(confirmToken.user_id);
+    
+        await authRepository.deleteToken(token);
+    
         return { success: true };
     }
 }
