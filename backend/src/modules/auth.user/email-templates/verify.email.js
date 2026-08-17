@@ -1,15 +1,13 @@
-function verifyEmailTemplate({ username, email, token }) {
-    const verifyUrl = `https://example.com/confirm-email?token=${encodeURIComponent(token)}`;
+const apiUrl = require('../../../shared/constants/apiUrl');
 
+function verifyEmailTemplate({ username, email, token }) {
     return `
 <!DOCTYPE html>
 <html lang="hu">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
     <title>E-mail cím megerősítése</title>
-
     <style>
         body {
             margin: 0;
@@ -193,176 +191,157 @@ function verifyEmailTemplate({ username, email, token }) {
         }
     </style>
 </head>
-
 <body>
-
-<table
-    role="presentation"
-    width="100%"
-    cellpadding="0"
-    cellspacing="0"
-    border="0"
-    class="wrapper"
->
-    <tr>
-        <td align="center">
-
-            <table
-                role="presentation"
-                width="100%"
-                cellpadding="0"
-                cellspacing="0"
-                border="0"
-                class="container"
-            >
-
-                <!-- HEADER -->
-                <tr>
-                    <td class="header">
-
-                        <h1>
-                            E-mail cím megerősítése
-                        </h1>
-
-                        <p>
-                            Új megerősítő linket kértél
-                        </p>
-
-                    </td>
-                </tr>
-
-                <!-- CONTENT -->
-                <tr>
-                    <td class="content">
-
-                        <p class="greeting">
-                            Szia ${username}!
-                        </p>
-
-                        <p class="text">
-                            Új megerősítő linket kértél a
-                            <strong>Kelet-baranya</strong> fiókodhoz.
-                        </p>
-
-                        <p class="text">
-                            Ha az előző regisztrációs e-mail nem érkezett meg,
-                            semmi gond. Az alábbi gombra kattintva újra
-                            megerősítheted az e-mail címedet.
-                        </p>
-
-                        <!-- EMAIL ADDRESS -->
-                        <div class="email-box">
-
-                            <div class="email-label">
-                                E-mail cím
-                            </div>
-
-                            <div class="email-value">
-                                ${email}
-                            </div>
-
-                        </div>
-
-                        <!-- BUTTON -->
-                        <div class="button-wrapper">
-
-                            <a
-                                href="${verifyUrl}"
-                                class="button"
-                                target="_blank"
-                            >
+    <table
+        role="presentation"
+        width="100%"
+        cellpadding="0"
+        cellspacing="0"
+        border="0"
+        class="wrapper"
+    >
+        <tr>
+            <td align="center">
+                <table
+                    role="presentation"
+                    width="100%"
+                    cellpadding="0"
+                    cellspacing="0"
+                    border="0"
+                    class="container"
+                >
+                    <!-- HEADER -->
+                    <tr>
+                        <td class="header">
+                            <h1>
                                 E-mail cím megerősítése
-                            </a>
+                            </h1>
+                            <p>
+                                Új megerősítő linket kértél
+                            </p>
+                        </td>
+                    </tr>
+                    <!-- CONTENT -->
+                    <tr>
+                        <td class="content">
 
-                        </div>
+                            <p class="greeting">
+                                Szia ${username}!
+                            </p>
 
-                        <p class="text">
-                            A gombra kattintva megnyílik a megerősítő oldal,
-                            ahol automatikusan ellenőrizzük a regisztrációdhoz
-                            tartozó e-mail címet.
-                        </p>
+                            <p class="text">
+                                Új megerősítő linket kértél a
+                                <strong>Kelet-baranya</strong> fiókodhoz.
+                            </p>
 
-                        <hr class="divider">
+                            <p class="text">
+                                Ha az előző regisztrációs e-mail nem érkezett meg,
+                                semmi gond. Az alábbi gombra kattintva újra
+                                megerősítheted az e-mail címedet.
+                            </p>
 
-                        <!-- FALLBACK LINK -->
-                        <div class="notice">
+                            <!-- EMAIL ADDRESS -->
+                            <div class="email-box">
 
-                            <strong>
-                                Nem működik a gomb?
-                            </strong>
+                                <div class="email-label">
+                                    E-mail cím
+                                </div>
 
-                            <br><br>
+                                <div class="email-value">
+                                    ${email}
+                                </div>
 
-                            Másold be az alábbi linket a böngésződ címsorába:
+                            </div>
 
-                            <br><br>
+                            <!-- BUTTON -->
+                            <div class="button-wrapper">
 
-                            <a
-                                href="${verifyUrl}"
-                                class="link"
-                                target="_blank"
-                            >
-                                ${verifyUrl}
-                            </a>
+                                <a
+                                    href="${apiUrl}/auth/user/confirm-email?token=${token}"
+                                    class="button"
+                                    target="_blank"
+                                >
+                                    E-mail cím megerősítése
+                                </a>
 
-                        </div>
+                            </div>
 
-                        <!-- SECURITY -->
-                        <p class="security">
-                            <strong>Biztonsági információ:</strong><br>
-                            Ha nem te kérted ezt az e-mailt, nincs szükséged
-                            semmilyen teendőre. Egyszerűen hagyd figyelmen kívül
-                            ezt az üzenetet.
-                        </p>
+                            <p class="text">
+                                A gombra kattintva megnyílik a megerősítő oldal,
+                                ahol automatikusan ellenőrizzük a regisztrációdhoz
+                                tartozó e-mail címet.
+                            </p>
 
-                    </td>
-                </tr>
+                            <hr class="divider">
 
-                <!-- FOOTER -->
-                <tr>
-                    <td class="footer">
+                            <!-- FALLBACK LINK -->
+                            <div class="notice">
 
-                        <p class="footer-text">
-                            Ez egy automatikusan generált üzenet.
-                            Kérjük, ne válaszolj erre az e-mailre.
-                        </p>
+                                <strong>
+                                    Nem működik a gomb?
+                                </strong>
 
-                        <div class="footer-links">
+                                <br><br>
 
-                            <a href="https://example.com/privacy">
-                                Adatvédelmi tájékoztató
-                            </a>
+                                Másold be az alábbi linket a böngésződ címsorába:
 
-                            &nbsp;•&nbsp;
+                                <br><br>
 
-                            <a href="https://example.com/support">
-                                Ügyfélszolgálat
-                            </a>
+                                <a
+                                    href="${apiUrl}/auth/user/confirm-email?token=${token}"
+                                    class="link"
+                                    target="_blank"
+                                >
+                                    "${apiUrl}/auth/user/confirm-email?token=${token}"
+                                </a>
 
-                            &nbsp;•&nbsp;
+                            </div>
 
-                            <a href="https://example.com/terms">
-                                ÁSZF
-                            </a>
+                            <!-- SECURITY -->
+                            <p class="security">
+                                <strong>Biztonsági információ:</strong><br>
+                                Ha nem te kérted ezt az e-mailt, nincs szükséged
+                                semmilyen teendőre. Egyszerűen hagyd figyelmen kívül
+                                ezt az üzenetet.
+                            </p>
 
-                        </div>
+                        </td>
+                    </tr>
 
-                        <p
-                            class="footer-text"
-                            style="margin-top: 15px;"
-                        >
-                            © 2026 Kelet-baranya. Minden jog fenntartva.
-                        </p>
+                    <!-- FOOTER -->
+                    <tr>
+                        <td class="footer">
+                            <p class="footer-text">
+                                Ez egy automatikusan generált üzenet.
+                                Kérjük, ne válaszolj erre az e-mailre.
+                            </p>
+                            <div class="footer-links">
+                                <a href="https://example.com/privacy">
+                                    Adatvédelmi tájékoztató
+                                </a>
 
-                    </td>
-                </tr>
+                                &nbsp;•&nbsp;
 
-            </table>
+                                <a href="https://example.com/support">
+                                    Ügyfélszolgálat
+                                </a>
 
-        </td>
-    </tr>
-</table>
+                                &nbsp;•&nbsp;
 
+                                <a href="https://example.com/terms">
+                                    ÁSZF
+                                </a>
+                            </div>
+
+                            <p class="footer-text" style="margin-top: 15px;">
+                                © 2026 Kelet-baranya. Minden jog fenntartva.
+                            </p>
+                        </td>
+                    </tr>
+                </table>
+            </td>
+        </tr>
+    </table>
 </body>
 </html>
     `;

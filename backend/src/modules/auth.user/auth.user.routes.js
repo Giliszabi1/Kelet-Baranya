@@ -23,8 +23,9 @@ router.get("/me", authenticate, authController.me);
 router.post("/forget-password", validate(authSchemas.forgetPasswordSchema), authController.forgetPassword)
 router.post("/reset-password", validate(authSchemas.resetPasswordSchema), authController.resetPassword)
 
-router.get("/confirm-email", /*validate(authSchemas.confirmEmailSchema),*/ authController.confirmEmail);
+router.get("/confirm-email", validate(authSchemas.confirmEmailSchema), authController.confirmEmail);
 
+router.post("/resend-confirmation-email", validate(authSchemas.resendConfirmationEmailSchema), authController.resendConfirmationEmail);
 
 
 module.exports = router;

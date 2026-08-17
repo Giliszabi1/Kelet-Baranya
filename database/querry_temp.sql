@@ -477,7 +477,8 @@ BEGIN
         `id`,
         `username`,
         `email`,
-        `password_hash`
+        `password_hash`,
+        `email_verified`
     FROM `user`
     WHERE `email` = sp_login_identifiry
        OR `username` = sp_login_identifiry;

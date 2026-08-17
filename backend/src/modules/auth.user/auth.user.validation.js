@@ -50,6 +50,9 @@ class usersSchemas {
     confirmEmailSchema = Joi.object({
         token: tokenValidation.empty("").required()
     })
+    resendConfirmationEmailSchema = Joi.object({
+        email: emailValidation.empty("").required()
+    })
 }
 
 module.exports = new usersSchemas();

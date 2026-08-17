@@ -16,6 +16,7 @@ class UserController {
         this.resetPassword = this.resetPassword.bind(this);
 
         this.confirmEmail = this.confirmEmail.bind(this);
+        this.resendConfirmationEmail = this.resendConfirmationEmail.bind(this);
     }
 
     async register(req, res, next) {
@@ -249,6 +250,22 @@ class UserController {
                 message: "Email cím sikeresen megerősítve."
             });
 
+        } catch (err) {
+            next(err);
+        }
+    }
+
+    async resendConfirmationEmail(req, res, next) {
+        try {
+            const { email } = req.body;
+
+            await this.authService.resendConfirmationEmail({ email });
+
+            return res.status(200).json({
+                success: true,
+                code: 200,
+                message: "If the provided email address exists in our system, we've sent a password reset email."
+            });
         } catch (err) {
             next(err);
         }

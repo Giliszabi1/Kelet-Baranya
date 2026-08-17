@@ -37,8 +37,7 @@ class UserService {
 
         const newRegistrationToken = Token.generate();
 
-        const registrationExpiresAt = new Date(Date.now() + 60 * 60 * 1000)
-            .toLocaleString('sv-SE', {timeZone: "Europe/Budapest"}); 
+        const registrationExpiresAt = new Date(Date.now() + 10 * 60 * 1000)
 
         const registrationToken = await authRepository.createToken({
             user_id: user.id, 
@@ -316,6 +315,37 @@ class UserService {
     
         await authRepository.deleteToken(token);
     
+        return { success: true };
+    }
+
+     async resendConfirmationEmail({ email }) {
+        const user = await authRepository.login(email);
+
+        if (!user || !user.id) {
+            return { success: true };
+        }
+
+        if (user.email_verified == 1) {
+            return { success: true };
+        }
+
+        const newRegistrationToken = Token.generate();
+
+        const registrationExpiresAt = new Date(Date.now() + 10 * 60 * 1000);
+
+        await authRepository.createToken({
+            user_id: user.id,
+            token: newRegistrationToken,
+            type: "register",
+            expires_at: registrationExpiresAt
+        });
+
+        await EmailService.register({
+            username: user.username,
+            email: user.email,
+            token: newRegistrationToken
+        });
+
         return { success: true };
     }
 }
