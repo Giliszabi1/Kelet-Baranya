@@ -7,14 +7,25 @@
   "type": "commonjs",
   "main": "server.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
-    "dev": "nodemon -r dotenv/config src/server.js dotenv_config_path=env/local.env"
+    "test": "dotenv -e env/test.env -- vitest tests/automatic --watch --pool=threads --reporter=verbose",
+    "test:run": "vitest run tests/automatic",
+    "server_test": "nodemon  --legacy-watch -r dotenv/config src/server.js dotenv_config_path=env/test.env",
+    "dev": "nodemon  --legacy-watch -r dotenv/config src/server.js dotenv_config_path=env/local.env"
   },
   "dependencies": {
+    "bcrypt": "^6.0.0",
     "cors": "^2.8.6",
     "dotenv": "^17.4.2",
     "express": "^5.2.1",
+    "express-rate-limit": "^8.6.2",
+    "joi": "^18.2.3",
+    "jsonwebtoken": "^9.0.3",
     "mysql2": "^3.23.2",
-    "nodemon": "^3.1.14"
+    "nodemailer": "^9.0.5"
+  },
+  "devDependencies": {
+    "dotenv-cli": "^11.0.0",
+    "nodemon": "^3.1.14",
+    "vitest": "^4.1.10"
   }
 }
