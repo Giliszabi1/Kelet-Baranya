@@ -16,28 +16,69 @@ const chars =
 ~\\|&, \t\n\r,€£©®`;
 
 describe("USERNAME", () => {
-        test("NORMAL", () => {
-            expect(usernameValidation.validate("TestUser2025").error).toBeUndefined();
-            expect(usernameValidation.validate("ZsoltGamer005").error).toBeUndefined();
-            expect(usernameValidation.validate("Giliszabi1").error).toBeUndefined();
-            expect(usernameValidation.validate("giliszabi").error).toBeUndefined();
-            expect(usernameValidation.validate("Werneralex12").error).toBeUndefined();
+
+        describe("NORMAL", ()=>{
+            test(`USERNAME: TestUser2025`, () => {
+                expect(usernameValidation.validate("TestUser2025").error).toBeUndefined();
+            });
+
+            test(`USERNAME: ZsoltGamer005`, () => {
+                expect(usernameValidation.validate("ZsoltGamer005").error).toBeUndefined();
+            });
+
+            test(`USERNAME: Giliszabi1`, () => {
+                expect(usernameValidation.validate("Giliszabi1").error).toBeUndefined();
+            });
+
+            test(`USERNAME: giliszabi`, () => {
+                expect(usernameValidation.validate("giliszabi").error).toBeUndefined();
+            });
+
+            test(`USERNAME: Werneralex12`, () => {
+                expect(usernameValidation.validate("Werneralex12").error).toBeUndefined();
+            });
+        })
+
+        describe("BOUNDARY", ()=>{
+
+            test("USERNAME: test1", () => {
+                expect(usernameValidation.validate("test1").error).toBeUndefined();
+            });
+
+            test(`USERNAME: ${"a".repeat(32)}`, () => {
+                expect(usernameValidation.validate("a".repeat(32)).error).toBeUndefined();
+            });
+
+            test("USERNAME: testf", () => {
+                expect(usernameValidation.validate("testf").error).toBeUndefined();
+            });
+
+            test("USERNAME: 000TEST000", () => {
+                expect(usernameValidation.validate("000TEST000").error).toBeUndefined();
+            });
+        })
             
-        });
+           
+            
+        
 
-        test("BOUNDARY", () => {
-            expect(usernameValidation.validate("test1").error).toBeUndefined();
-            expect(usernameValidation.validate("a".repeat(32)).error).toBeUndefined();
-            expect(usernameValidation.validate("testf").error).toBeUndefined();
-            expect(usernameValidation.validate("000TEST000").error).toBeUndefined();
-        });
+        describe("INVALID", ()=>{
+            test(`USERNAME: ${"a".repeat(33)}`, () => {
+                expect(usernameValidation.validate("a".repeat(33)).error.details[0].message).toBe("USERNAME_TOO_LONG");
+            });
 
-        test("INVALID", () => {
-            expect(usernameValidation.validate("a".repeat(33)).error.details[0].message).toBe("USERNAME_TOO_LONG");
-            expect(usernameValidation.validate("a").error.details[0].message).toBe("USERNAME_TOO_SHORT");
-            expect(usernameValidation.validate("Test_User").error.details[0].message).toBe("USERNAME_INVALID");
-            expect(usernameValidation.validate("111111111").error.details[0].message).toBe("USERNAME_INVALID");
-        });
+            test("USERNAME: a", () => {
+                expect(usernameValidation.validate("a").error.details[0].message).toBe("USERNAME_TOO_SHORT");
+            });
+
+            test("USERNAME: Test_User", () => {
+                expect(usernameValidation.validate("Test_User").error.details[0].message).toBe("USERNAME_INVALID");
+            });
+
+            test("USERNAME: 111111111", () => {
+                expect(usernameValidation.validate("111111111").error.details[0].message).toBe("USERNAME_INVALID");
+            });
+        })
 
         test("RANDOM_TEST", ()=>{
             for (let i = 0; i < RANDOM_TEST_LENGTH; i++) {

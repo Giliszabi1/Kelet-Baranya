@@ -2,6 +2,7 @@ const transporter = require('../../infrastructure/mail/smtp.mail');
 const smtpConfig = require('../../config/smtp.config');
 
 const registerTemplate = require('./email-templates/registration.success');
+const forgetPasswordTemplate = require('./email-templates/forgot.password');
 const verifyEmailTemplate = require('./email-templates/verify.email');
 
 class EmailService {
@@ -18,6 +19,24 @@ class EmailService {
                     email: email, 
                     token: token
                 })
+            });
+        } catch (mailErr) {
+            console.error("Nem sikerült elküldeni a jelszó-visszaállító emailt:", mailErr);
+        }
+    }
+
+    async forgotPassword({username, email, token}) {
+        try {
+            await transporter.sendMail({
+                from: smtpConfig.SMTP_USER,
+                to: email,
+                subject: "Jelszó visszaállítás",
+                html: forgetPasswordTemplate({
+                    username: username, 
+                    email: email,
+                    token: token
+                })
+                
             });
         } catch (mailErr) {
             console.error("Nem sikerült elküldeni a jelszó-visszaállító emailt:", mailErr);

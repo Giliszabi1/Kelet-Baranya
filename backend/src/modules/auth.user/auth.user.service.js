@@ -7,6 +7,7 @@ const JWT = require("../../shared/utils/jwt");
 const Token = require('../../shared/utils/token');
 
 const EmailService = require('./auth.user.email.service');
+const authUserEmailService = require('./auth.user.email.service');
 
 
 class UserService {
@@ -226,7 +227,7 @@ class UserService {
             return { success: true };
         }
  
-        const resetToken = RefreshToken.generate();
+        const resetToken = Token.generate();
  
         const expiresAt = new Date();
         expiresAt.setMinutes(expiresAt.getMinutes() + Number(process.env.PASSWORD_RESET_TOKEN_EXPIRES_MINUTES || 30));
@@ -238,16 +239,12 @@ class UserService {
             expires_at: expiresAt
         });
  
-        try {
-            await transporter.sendMail({
-                from: smtpConfig.SMTP_USER,
-                to: user.email,
-                subject: "Jelszó visszaállítás",
-                text: `Szia!\n\nJelszó-visszaállítást kértél. Ez egy próba email, a valós verzióban itt egy link lenne a frontendre a tokennel.\n\nToken: ${resetToken}\n\nHa nem te kérted, hagyd figyelmen kívül ezt az emailt.`
-            });
-        } catch (mailErr) {
-            console.error("Nem sikerült elküldeni a jelszó-visszaállító emailt:", mailErr);
-        }
+        await authUserEmailService.forgotPassword({
+            username: user.username,
+            email: user.email,
+            token: resetToken
+        });
+
         return { success: true };
     }
  

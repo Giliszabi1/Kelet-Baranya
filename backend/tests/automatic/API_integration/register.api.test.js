@@ -26,17 +26,16 @@ describe("Regisztráció API", () => {
       password: "PatrikuPass123",
     },
   ];
-
-  test("NORMAL", async () => {
-    for (const user of users) {
-      const response = await fetch(`${API_URL}/auth/user/register`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(user),
-      });
-      expect(response.status).toBe(201);
-    }
-  }, 20_000);
+  for (const user of users) {
+    test(`NORMAL: ${user.username}, ${user.email},${user.password}`, async () => {
+        const response = await fetch(`${API_URL}/auth/user/register`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(user),
+        });
+        expect(response.status).toBe(201);
+    }, 20_000);
+  }
 });

@@ -169,7 +169,7 @@ BEGIN
 
 END$$
 
-
+DROP PROCEDURE IF EXISTS `sp_user_confirm_email`;
 CREATE PROCEDURE `sp_user_confirm_email`(IN `p_user_id` INT)
 BEGIN
     UPDATE `user` SET `email_verified` = 1 WHERE `id` = `p_user_id`;

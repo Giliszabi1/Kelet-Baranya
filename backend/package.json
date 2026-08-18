@@ -7,7 +7,7 @@
   "type": "commonjs",
   "main": "server.js",
   "scripts": {
-    "test": "dotenv -e env/test.env -- vitest tests/automatic --watch --pool=threads --reporter=verbose",
+    "test": "dotenv -e env/test.env -- vitest tests/automatic --watch --pool=threads --reporter=verbose --no-file-parallelism",
     "test:run": "vitest run tests/automatic",
     "server_test": "nodemon  --legacy-watch -r dotenv/config src/server.js dotenv_config_path=env/test.env",
     "dev": "nodemon  --legacy-watch -r dotenv/config src/server.js dotenv_config_path=env/local.env"
