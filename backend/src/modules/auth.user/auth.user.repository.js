@@ -55,6 +55,11 @@ class usersRepository {
         const [answer] = await DB_CONNECT.query(`CALL sp_user_confirm_email(?)`, [user_id]);
         return answer;
     }
+
+    async setTwoFactorStatus(user_id, enabled) {
+        const [answer] = await DB_CONNECT.query(`CALL sp_user_set_two_factor(?, ?)`, [user_id, enabled]);
+        return answer;
+    }
 }
 
 module.exports = new usersRepository()

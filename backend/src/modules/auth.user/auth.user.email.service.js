@@ -4,6 +4,7 @@ const smtpConfig = require('../../config/smtp.config');
 const registerTemplate = require('./email-templates/registration.success');
 const forgetPasswordTemplate = require('./email-templates/forgot.password');
 const verifyEmailTemplate = require('./email-templates/verify.email');
+const twoFactorTemplate = require('./email-templates/two.factor.code');
 
 class EmailService {
     
@@ -57,6 +58,23 @@ class EmailService {
             });
         } catch (mailErr) {
             console.error("Nem sikerült elküldeni a email validáló emailt:", mailErr);
+        }
+    }
+
+    async sendTwoFactorCode({username, email, code}) {
+        try {
+            await transporter.sendMail({
+                from: smtpConfig.SMTP_USER,
+                to: email,
+                subject: "Bejelentkezési hitelesítő kód",
+                html: twoFactorTemplate({
+                    username: username,
+                    email: email,
+                    code: code
+                })
+            });
+        } catch (mailErr) {
+            console.error("Nem sikerült elküldeni a 2FA kódot:", mailErr);
         }
     }
 }

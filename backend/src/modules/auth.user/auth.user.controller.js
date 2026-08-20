@@ -17,6 +17,10 @@ class UserController {
 
         this.confirmEmail = this.confirmEmail.bind(this);
         this.resendConfirmationEmail = this.resendConfirmationEmail.bind(this);
+
+        this.verifyTwoFactor = this.verifyTwoFactor.bind(this);
+        this.enableTwoFactor = this.enableTwoFactor.bind(this);
+        this.disableTwoFactor = this.disableTwoFactor.bind(this);
     }
 
     async register(req, res, next) {
@@ -69,10 +73,21 @@ class UserController {
             });
            
             if(user.success){
+
+                if (user.requires2FA) {
+                    return res.status(200).json({
+                        success: true,
+                        code: 200,
+                        message: "2FA_LOGIN_REQUIRED",
+                        requires2FA: true,
+                        data: user.data
+                    });
+                }
+
                 return res.status(200).json({
                     success: true,
                     code: 200,
-                    message: "User login successfully.",
+                    message: "LOGIN_SUCCESSFUL",
                     data: user.data,
                 });
             }else{
@@ -265,6 +280,77 @@ class UserController {
                 success: true,
                 code: 200,
                 message: "If the provided email address exists in our system, we've sent a password reset email."
+            });
+        } catch (err) {
+            next(err);
+        }
+    }
+
+    async verifyTwoFactor(req, res, next) {
+        try {
+            const { username, email, code } = req.body;
+ 
+            const client = {
+                user_agent: req.headers["user-agent"] || null,
+                accept_language: req.headers["accept-language"] || null,
+                sec_ch_ua: req.headers["sec-ch-ua"] || null,
+                sec_ch_ua_mobile: req.headers["sec-ch-ua-mobile"] || null,
+                sec_ch_ua_platform: req.headers["sec-ch-ua-platform"] || null
+            };
+ 
+            const result = await this.authService.verifyTwoFactor({
+                username,
+                email,
+                code,
+                client
+            });
+ 
+            if (!result.success) {
+                return res.status(401).json({
+                    success: false,
+                    code: 401,
+                    errors: [result.error]
+                });
+            }
+ 
+            return res.status(200).json({
+                success: true,
+                code: 200,
+                message: "Bejelentkezés véglegesítve.",
+                data: result.data
+            });
+ 
+        } catch (err) {
+            next(err);
+        }
+    }
+ 
+    async enableTwoFactor(req, res, next) {
+        try {
+            const userId = req.user.id;
+
+            await this.authService.setTwoFactorStatus(userId, true);
+ 
+            return res.status(200).json({
+                success: true,
+                code: 200,
+                message: "2FA_LOGIN_TRUE"
+            });
+        } catch (err) {
+            next(err);
+        }
+    }
+ 
+    async disableTwoFactor(req, res, next) {
+        try {
+            const userId = req.user.id;
+ 
+            await this.authService.setTwoFactorStatus(userId, false);
+ 
+            return res.status(200).json({
+                success: true,
+                code: 200,
+                message: "2FA_LOGIN_FALSE"
             });
         } catch (err) {
             next(err);

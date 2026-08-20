@@ -19,6 +19,19 @@
 
 DELIMITER $$
 
+DROP PROCEDURE IF EXISTS sp_user_set_two_factor $$
+CREATE PROCEDURE sp_user_set_two_factor(
+    IN p_user_id INT,
+    IN p_enabled TINYINT(1)
+)
+BEGIN
+    UPDATE user
+    SET two_factor_enabled = p_enabled
+    WHERE id = p_user_id;
+ 
+    SELECT p_user_id AS id, p_enabled AS two_factor_enabled;
+END $$
+
 DROP PROCEDURE IF EXISTS `sp_delete_all_data`$$
 
 CREATE PROCEDURE `sp_delete_all_data`()
@@ -478,7 +491,8 @@ BEGIN
         `username`,
         `email`,
         `password_hash`,
-        `email_verified`
+        `email_verified`,
+        `two_factor_enabled` 
     FROM `user`
     WHERE `email` = sp_login_identifiry
        OR `username` = sp_login_identifiry;

@@ -43,6 +43,12 @@ class AppConfig {
         }
         return jwtConfig;
     }
+    twoFactoryCodeConfig() {
+        const twoFactoryCodeConfig = {
+            TWO_FACTOR_CODE_EXPIRES_IN: process.env.TWO_FACTOR_CODE_EXPIRES_IN
+        }
+        return twoFactoryCodeConfig;
+    }
 }
 
 

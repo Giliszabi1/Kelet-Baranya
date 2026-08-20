@@ -423,6 +423,7 @@ CREATE TABLE `user` (
   `password_hash` varchar(255) NOT NULL,
   `email` varchar(255) NOT NULL,
   `email_verified` tinyint DEFAULT 0,
+  `two_factor_enabled` TINYINT(1) NOT NULL DEFAULT 0,
   `type` VARCHAR(255) DEFAULT "user",
   `created_at` datetime DEFAULT current_timestamp(),
   `updated_at` datetime DEFAULT NULL,
