@@ -45,7 +45,7 @@ class AppConfig {
     }
     twoFactoryCodeConfig() {
         const twoFactoryCodeConfig = {
-            TWO_FACTOR_CODE_EXPIRES_IN: process.env.TWO_FACTOR_CODE_EXPIRES_IN
+            TWO_FACTOR_CODE_EXPIRES_IN: (Number(process.env.TWO_FACTOR_CODE_EXPIRES_IN))
         }
         return twoFactoryCodeConfig;
     }

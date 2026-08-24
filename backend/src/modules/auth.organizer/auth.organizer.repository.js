@@ -1,14 +1,14 @@
 const DB_CONNECT = require("../../infrastructure/database/mysql.database");
 
-class usersRepository {
+class OrganizerRepository {
 
-    async register(username, email, password_hash) {
-        const [answer] = await DB_CONNECT.query("call sp_user_register(?, ?, ?);", [username, password_hash, email])
+    async register(username, email, password_hash, fullname) {
+        const [answer] = await DB_CONNECT.query("call sp_organizer_register(?, ?, ?, ?, ?);", [username, password_hash, email, fullname, 1])
         return answer[0][0];
     }
 
     async login(loginIdentifier) {
-        const [answer] = await DB_CONNECT.query("call sp_user_login(?, ?);", [loginIdentifier, "user"])
+        const [answer] = await DB_CONNECT.query("call sp_user_login(?, ?);", [loginIdentifier, "organizer"])
         return answer[0][0];
     }
 
@@ -17,12 +17,12 @@ class usersRepository {
             [user_id, token, user_agent, accept_language, sec_ch_ua, sec_ch_ua_mobile, sec_ch_ua_platform, expires_at]);
         return answer;
     }
-    async findRefreshTokenUser(token) {
-        const [answer] = await DB_CONNECT.query(`CALL sp_user_token_get_user(?)`, [token]);
+    async findRefreshTokenOrganizer(token) {
+        const [answer] = await DB_CONNECT.query(`CALL sp_user_token_get_organizer(?)`, [token]);
         return answer[0][0];
     }
-    async findUserById(userId) {
-        const [answer] = await DB_CONNECT.query(`CALL sp_user_get_by_id(?)`, [userId]);
+    async findOrganizerById(userId) {
+        const [answer] = await DB_CONNECT.query(`CALL sp_organizer_get_by_id(?)`, [userId]);
         return answer[0][0];
     }
     
@@ -55,6 +55,7 @@ class usersRepository {
         const [answer] = await DB_CONNECT.query(`CALL sp_user_confirm_email(?)`, [user_id]);
         return answer;
     }
+
 }
 
-module.exports = new usersRepository()
+module.exports = new OrganizerRepository()

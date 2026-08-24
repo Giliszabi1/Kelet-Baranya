@@ -1,32 +1,33 @@
 const jwtConfig = require('../../config/app.config').jwtRefreshTokenConfig();
 
+const issueTwoFactorCode = require("../auth.twoFactorAuth/auth.twoFactorAuth.service").issueTwoFactorCode;
 
-const authRepository  = require('./auth.user.repository');
+const authRepository  = require('./auth.organizer.repository');
 
 const Encryption = require("../../shared/utils/password")
 const JWT = require("../../shared/utils/jwt");
 const Token = require('../../shared/utils/token');
 
-const authUserEmailService = require('./auth.user.email.service');
+const authUserEmailService = require('./auth.organizer.email.service');
 
-const issueTwoFactorCode = require("../auth.twoFactorAuth/auth.twoFactorAuth.service").issueTwoFactorCode;
+
  
 
-class UserService {
+class OrganizerService {
     
 
-    async register({username, email, password, client}) {
+    async register({username, email, password, fullname, client}) {
 
         const passwordHash = await Encryption.hash(password);
 
-        const user = await authRepository.register(username, email, passwordHash);
+        const user = await authRepository.register(username, email, passwordHash, fullname);
 
-        const accessToken = JWT.generateAccessToken({ id: user.id, type: user.type || "user" });
+        const accessToken = JWT.generateAccessToken({ id: user.id, type: user.type || "organizer" });
         const refreshToken = Token.generate(); 
 
         const expiresAt = new Date(); 
         expiresAt.setDate(expiresAt.getDate() + Number(jwtConfig.REFRESH_TOKEN_EXPIRES_DAYS || 30)); 
-        
+
         await authRepository.createRefreshToken({   
             user_id: user.id,
             token: refreshToken, 
@@ -103,7 +104,7 @@ class UserService {
 
         const accessToken = JWT.generateAccessToken({
             id: user.id,
-            type: user.type || "user"
+            type: user.type || "organizer"
         });
 
         const refreshToken = Token.generate();
@@ -137,7 +138,7 @@ class UserService {
     }
 
     async refresh({ token, client }) {
-        const refreshToken = await authRepository.findRefreshTokenUser(token);
+        const refreshToken = await authRepository.findRefreshTokenOrganizer(token);
 
         if (!refreshToken) {
             return {
@@ -168,7 +169,7 @@ class UserService {
 
         const accessToken = JWT.generateAccessToken({
             id: refreshToken.user_id,
-            type: refreshToken.type || "user"
+            type: refreshToken.type || "organizer"
         });
 
         await authRepository.revokeRefreshToken(token);
@@ -205,7 +206,7 @@ class UserService {
 
     async logout(token) {
 
-        const refreshToken = await authRepository.findRefreshTokenUser(token);
+        const refreshToken = await authRepository.findRefreshTokenOrganizer(token);
         
         if (!refreshToken) {
             return {
@@ -222,7 +223,7 @@ class UserService {
     }
 
     async me(userId) {
-        const user = await authRepository.findUserById(userId);
+        const user = await authRepository.findOrganizerById(userId);
  
         if (!user) {
             return {
@@ -366,4 +367,4 @@ class UserService {
         return { success: true };
     }
 }
-module.exports = UserService;
+module.exports = OrganizerService;

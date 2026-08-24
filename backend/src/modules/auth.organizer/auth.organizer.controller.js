@@ -1,6 +1,6 @@
-const authService = require('./auth.user.service');
+const authService = require('./auth.organizer.service');
 
-class UserController {
+class OrganizerController {
     constructor() {
         this.authService = new authService();
 
@@ -35,6 +35,7 @@ class UserController {
                 username,
                 email,
                 password,
+                fullname,
                 client
             });
 
@@ -68,9 +69,7 @@ class UserController {
                 client
             });
            
-            if(user.success){
-
-                if (user.requires2FA) {
+            if(user.success && user.requires2FA){
                     return res.status(200).json({
                         success: true,
                         code: 200,
@@ -78,14 +77,6 @@ class UserController {
                         requires2FA: true,
                         data: user.data
                     });
-                }
-
-                return res.status(200).json({
-                    success: true,
-                    code: 200,
-                    message: "LOGIN_SUCCESSFUL",
-                    data: user.data,
-                });
             }else{
                 next(user.error);
             }
@@ -283,4 +274,4 @@ class UserController {
     }
 }
 
-module.exports = new UserController();
+module.exports = new OrganizerController();

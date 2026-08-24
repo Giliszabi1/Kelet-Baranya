@@ -369,6 +369,7 @@ DROP TABLE IF EXISTS `organizerInfo`;
 CREATE TABLE `organizerInfo` (
   `id` int(11) NOT NULL,
   `user_id` int(11) NOT NULL,
+  `fullname` VARCHAR(64) NOT NULL,
   `image_id` int(11) DEFAULT NULL,
   `bio` text DEFAULT NULL,
   `rating` decimal(2,1) DEFAULT 0.0,
