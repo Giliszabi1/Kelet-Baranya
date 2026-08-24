@@ -47,6 +47,51 @@ DELIMITER $$
 --
 -- Eljárások
 --
+--
+-- Register Admin procedure
+--
+
+DROP PROCEDURE IF EXISTS `sp_adminInfo_create`$$
+CREATE DEFINER=`root`@`%` PROCEDURE `sp_adminInfo_create` (IN `p_user_id` INT, IN `p_admin_settings_id` INT)   BEGIN
+    DECLARE v_adminInfo_id INT;
+
+    INSERT INTO `adminInfo`( `user_id`,  `admin_settings_id`) VALUES (p_user_id, p_admin_settings_id);
+
+    SET v_adminInfo_id = LAST_INSERT_ID();
+
+    SELECT v_adminInfo_id AS adminInfo_id;
+END$$
+
+DROP PROCEDURE IF EXISTS `sp_admin_register`$$
+CREATE DEFINER=`root`@`%` PROCEDURE `sp_admin_register` (IN `p_username` VARCHAR(25), IN `p_password_hash` VARCHAR(255), IN `p_email` VARCHAR(255))   BEGIN
+    DECLARE v_user_id INT;
+    DECLARE v_base_settings_id INT;
+    DECLARE v_admin_settings_id INT;
+
+    call sp_user_create(p_username, p_password_hash, p_email, "user");
+    SET v_user_id = LAST_INSERT_ID();
+
+    call sp_base_settings_create(v_user_id);
+    SET v_base_settings_id = LAST_INSERT_ID();
+
+    call sp_admin_settings_create(v_base_settings_id);
+    SET v_admin_settings_id = LAST_INSERT_ID();
+
+    call sp_adminInfo_create(v_user_id, v_admin_settings_id);
+    
+    SELECT `id`, `username`, `password_hash`, `email`, `type`  FROM `user` WHERE id = v_user_id;
+END$$
+
+DROP PROCEDURE IF EXISTS `sp_admin_settings_create`$$
+CREATE DEFINER=`root`@`%` PROCEDURE `sp_admin_settings_create` (IN `p_base_settings_id` INT)   BEGIN
+    DECLARE v_admin_settings_id INT;
+
+    INSERT INTO `admin_settings`(`settings_id`, `event_reminder`, `new_event_notification`) VALUES (p_base_settings_id, 0 , 0);
+
+    SET v_admin_settings_id = LAST_INSERT_ID();
+
+    SELECT v_admin_settings_id AS admin_settings_id;
+END$$
 
 --
 -- Register User procedure
