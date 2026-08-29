@@ -4,7 +4,7 @@ import passwordValidation from "../../../../src/shared/validation/password.valid
 
 const RANDOM_TEST_LENGTH = 10_000;
 
-const approvedChars = /^[A-Za-z0-9!@#$%^&*]+$/;
+const approvedChars = /^[A-Za-z0-9!@#$%^&*.]+$/;
 
 const chars = `
 abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ

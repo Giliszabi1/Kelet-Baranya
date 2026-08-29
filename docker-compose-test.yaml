@@ -7,36 +7,35 @@
 # You can add other services your application may depend on here, such as a
 # database or a cache. For examples, see the Awesome Compose repository:
 # https://github.com/docker/awesome-compose
-
-name: kelet_baranya
+name: "kelet_baranya_test"
 services:
-  server:
+  server_test:
     build:
       context: ./backend
-    container_name: Kelet-baranya_backend
+    container_name: Kelet-baranya_backend_test_server
     environment:
-      NODE_ENV: development
-      DB_HOST: mysql
+      NODE_ENV: test
+      DB_HOST: mysql_test
       DB_PORT: 3306
-      DB_NAME: kelet_baranya_db
-      DB_USER: kelet_user
-      DB_PASSWORD: kelet_user
+      DB_NAME: kelet_baranya_test_db
+      DB_USER: kelet_test_user
+      DB_PASSWORD: kelet_test_user
     ports:
-      - 3000:3000
-    command: npm run dev
+      - 3002:3002
     volumes:
       - ./backend:/usr/src/app
       - /usr/src/app/node_modules
+    command: npm run server_test
     depends_on:
-      - mysql
+      - mysql_test
 
-  cli:
+  test:
     build:
       context: ./backend
-    container_name: Kelet-baranya_cli
+    container_name: Kelet-baranya_backend_test
     environment:
-      NODE_ENV: development
-      DB_HOST: mysql
+      NODE_ENV: test
+      DB_HOST: mysql_test
       DB_PORT: 3306
       DB_NAME: kelet_baranya_test_db
       DB_USER: kelet_test_user
@@ -44,16 +43,14 @@ services:
     volumes:
       - ./backend:/usr/src/app
       - /usr/src/app/node_modules
-    command: npm run cli
-    stdin_open: true
-    tty: true
+    command: npm run test
     depends_on:
-      - mysql
+      - mysql_test
       
-  mysql:
+  mysql_test:
     image: mysql:8.4
 
-    container_name: kelet_barany_mysql
+    container_name: kelet_barany_mysql_test
 
     restart: always
 
@@ -64,24 +61,20 @@ services:
       MYSQL_PASSWORD: kelet_user
 
     ports:
-      - "3306:3306"
+      - "3307:3306"
 
     volumes:
-      - mysql_data:/var/lib/mysql
       - ./database:/docker-entrypoint-initdb.d
 
-  phpmyadmin:
+  phpmyadmin_test:
     image: phpmyadmin/phpmyadmin
-    container_name: kelet_baranya_phpmyadmin
+    container_name: kelet_baranya_phpmyadmin_test
     restart: always
     ports:
-      - "8080:80"
+      - "8181:80"
     environment:
-      PMA_HOST: mysql
+      PMA_HOST: mysql_test
       PMA_PORT: 3306
       MYSQL_ROOT_PASSWORD: root
     depends_on:
-      - mysql
-      
-volumes:
-  mysql_data:
+      - mysql_test

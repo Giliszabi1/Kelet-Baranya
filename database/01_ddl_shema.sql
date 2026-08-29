@@ -26,6 +26,25 @@ USE `kelet_baranya_db`;
 -- --------------------------------------------------------
 
 --
+-- Tábla szerkezet ehhez a táblához `audit_logs`
+--
+DROP TABLE IF EXISTS `audit_logs`;
+CREATE TABLE `audit_logs` (
+    `id` int(11) NOT NULL,
+    `actor_id` int(11) NULL,
+    `actor_role` VARCHAR(30) NULL,
+    `action` VARCHAR(255) NOT NULL,
+    `status` VARCHAR(20) NOT NULL DEFAULT 'success',
+    `description` text DEFAULT NULL,
+    `entity_type` VARCHAR(255) NOT NULL,
+    `entity_id` int(11) NULL,
+    `old_data` JSON NULL,
+    `new_data` JSON NULL,
+    `ip_address` VARCHAR(45) NULL,
+    `created_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP()
+) ENGINE=InnoDB DEFAULT CHARSET=latin1 COLLATE=latin1_swedish_ci;
+
+--
 -- Tábla szerkezet ehhez a táblához `adminInfo`
 --
 
@@ -442,6 +461,7 @@ DROP TABLE IF EXISTS `userInfo`;
 CREATE TABLE `userInfo` (
   `id` int(11) NOT NULL,
   `user_id` int(11) NOT NULL,
+  `gender` tinyint(1) DEFAULT NULL,
   `image_id` int(11) DEFAULT NULL,
   `user_settings_id` int(11) DEFAULT NULL,
   `created_at` datetime DEFAULT current_timestamp(),
@@ -529,6 +549,14 @@ CREATE TABLE `user_token` (
 --
 -- Indexek a kiírt táblákhoz
 --
+--
+-- A tábla indexei `audit_logs`
+--
+ALTER TABLE `audit_logs`
+    ADD PRIMARY KEY (`id`),
+    ADD KEY `actor_id` (`actor_id`),
+    ADD KEY `entity_type_entity_id` (`entity_type`, `entity_id`),
+    ADD KEY `created_at` (`created_at`);
 
 --
 -- A tábla indexei `adminInfo`
@@ -767,6 +795,12 @@ ALTER TABLE `user_token`
 --
 -- A kiírt táblák AUTO_INCREMENT értéke
 --
+
+--
+-- AUTO_INCREMENT a táblához `audit_logs`
+--
+ALTER TABLE `audit_logs`
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
 
 --
 -- AUTO_INCREMENT a táblához `adminInfo`

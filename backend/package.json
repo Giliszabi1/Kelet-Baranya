@@ -7,12 +7,14 @@
   "type": "commonjs",
   "main": "server.js",
   "scripts": {
+    "cli": "node ./src/CLI/index.js",
     "test": "dotenv -e env/test.env -- vitest tests/automatic --watch --pool=threads --reporter=verbose --no-file-parallelism",
     "test:run": "vitest run tests/automatic",
     "server_test": "nodemon  --legacy-watch -r dotenv/config src/server.js dotenv_config_path=env/test.env",
     "dev": "nodemon  --legacy-watch -r dotenv/config src/server.js dotenv_config_path=env/local.env"
   },
   "dependencies": {
+    "@inquirer/prompts": "^8.6.0",
     "bcrypt": "^6.0.0",
     "cors": "^2.8.6",
     "dotenv": "^17.4.2",

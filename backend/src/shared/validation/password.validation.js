@@ -6,7 +6,7 @@ const passwordValidation = Joi.string()
     .pattern(/[A-Z]/)
     .pattern(/[a-z]/)
     .pattern(/[0-9]/)
-    .pattern(/^[A-Za-z0-9!@#$%^&*]+$/)
+    .pattern(/^[A-Za-z0-9!@#$%^&*.]+$/)
     .messages({
         "string.empty": "PASSWORD_REQUIRED",
         "string.min": "PASSWORD_TOO_SHORT",
