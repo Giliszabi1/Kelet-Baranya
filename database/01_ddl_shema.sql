@@ -20,7 +20,7 @@ SET time_zone = "+00:00";
 --
 -- Adatbázis: `kelet_baranya_db`
 --
-CREATE DATABASE IF NOT EXISTS `kelet_baranya_db` DEFAULT CHARACTER SET latin1 COLLATE latin1_swedish_ci;
+CREATE DATABASE IF NOT EXISTS `kelet_baranya_db` DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci;
 USE `kelet_baranya_db`;
 
 -- --------------------------------------------------------
@@ -37,7 +37,7 @@ CREATE TABLE `adminInfo` (
   `created_at` datetime DEFAULT current_timestamp(),
   `updated_at` datetime DEFAULT NULL,
   `isDeleted` tinyint(1) DEFAULT 0
-) ENGINE=InnoDB DEFAULT CHARSET=latin1 COLLATE=latin1_swedish_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
 -- --------------------------------------------------------
 
@@ -52,7 +52,7 @@ CREATE TABLE `admin_settings` (
   `event_reminder` tinyint(4) DEFAULT 1,
   `new_event_notification` tinyint(4) DEFAULT 1,
   `updated_at` datetime DEFAULT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=latin1 COLLATE=latin1_swedish_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
 -- --------------------------------------------------------
 
@@ -69,7 +69,7 @@ CREATE TABLE `base_settings` (
   `email_notification` tinyint(4) DEFAULT 1,
   `dark_mode` tinyint(4) DEFAULT 0,
   `updated_at` datetime DEFAULT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=latin1 COLLATE=latin1_swedish_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
 -- --------------------------------------------------------
 
@@ -82,7 +82,7 @@ CREATE TABLE `category` (
   `id` int(11) NOT NULL,
   `name` varchar(50) DEFAULT NULL,
   `image_id` int(11) DEFAULT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=latin1 COLLATE=latin1_swedish_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
 -- --------------------------------------------------------
 
@@ -99,7 +99,7 @@ CREATE TABLE `current_weather` (
   `main_temp_feels_like` decimal(4,2) DEFAULT NULL,
   `visibility` int(11) DEFAULT NULL,
   `wind_speed` decimal(4,2) DEFAULT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=latin1 COLLATE=latin1_swedish_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
 -- --------------------------------------------------------
 
@@ -125,7 +125,7 @@ CREATE TABLE `event` (
   `updated_at` datetime DEFAULT NULL,
   `deleted_at` datetime DEFAULT NULL,
   `isDeleted` tinyint(1) DEFAULT 0
-) ENGINE=InnoDB DEFAULT CHARSET=latin1 COLLATE=latin1_swedish_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
 -- --------------------------------------------------------
 
@@ -138,7 +138,7 @@ CREATE TABLE `event_category` (
   `id` int(11) NOT NULL,
   `event_id` int(11) NOT NULL,
   `category_id` int(11) NOT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=latin1 COLLATE=latin1_swedish_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
 -- --------------------------------------------------------
 
@@ -152,7 +152,7 @@ CREATE TABLE `event_image` (
   `event_id` int(11) NOT NULL,
   `image_id` int(11) NOT NULL,
   `sort_order` int(11) DEFAULT 0
-) ENGINE=InnoDB DEFAULT CHARSET=latin1 COLLATE=latin1_swedish_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
 -- --------------------------------------------------------
 
@@ -168,7 +168,7 @@ CREATE TABLE `event_participant` (
   `status` enum('interested','going','not_going') DEFAULT 'interested',
   `created_at` datetime DEFAULT current_timestamp(),
   `updated_at` datetime DEFAULT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=latin1 COLLATE=latin1_swedish_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
 -- --------------------------------------------------------
 
@@ -188,7 +188,7 @@ CREATE TABLE `event_repeat` (
   `updated_at` datetime DEFAULT NULL,
   `deleted_at` datetime DEFAULT NULL,
   `isDeleted` tinyint(1) DEFAULT 0
-) ENGINE=InnoDB DEFAULT CHARSET=latin1 COLLATE=latin1_swedish_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
 -- --------------------------------------------------------
 
@@ -206,7 +206,7 @@ CREATE TABLE `event_review` (
   `created_at` datetime DEFAULT current_timestamp(),
   `updated_at` datetime DEFAULT NULL,
   `isDeleted` tinyint(1) DEFAULT 0
-) ENGINE=InnoDB DEFAULT CHARSET=latin1 COLLATE=latin1_swedish_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
 -- --------------------------------------------------------
 
@@ -223,7 +223,7 @@ CREATE TABLE `forecast_weather` (
   `main_temp_feels_like` decimal(4,2) DEFAULT NULL,
   `visibility` int(11) DEFAULT NULL,
   `wind_speed` decimal(4,2) DEFAULT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=latin1 COLLATE=latin1_swedish_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
 -- --------------------------------------------------------
 
@@ -239,7 +239,7 @@ CREATE TABLE `friend_request` (
   `status` enum('pending','accepted','declined') DEFAULT 'pending',
   `created_at` datetime DEFAULT current_timestamp(),
   `responded_at` datetime DEFAULT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=latin1 COLLATE=latin1_swedish_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
 -- --------------------------------------------------------
 
@@ -258,7 +258,7 @@ CREATE TABLE `group` (
   `updated_at` datetime DEFAULT NULL,
   `deleted_at` datetime DEFAULT NULL,
   `isDeleted` tinyint(1) DEFAULT 0
-) ENGINE=InnoDB DEFAULT CHARSET=latin1 COLLATE=latin1_swedish_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
 -- --------------------------------------------------------
 
@@ -273,7 +273,7 @@ CREATE TABLE `group_member` (
   `group_id` int(11) NOT NULL,
   `created_at` datetime DEFAULT current_timestamp(),
   `joined_at` datetime DEFAULT current_timestamp()
-) ENGINE=InnoDB DEFAULT CHARSET=latin1 COLLATE=latin1_swedish_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
 -- --------------------------------------------------------
 
@@ -290,7 +290,7 @@ CREATE TABLE `image` (
   `created_by` int(11) DEFAULT NULL,
   `created_at` datetime DEFAULT current_timestamp(),
   `isDeleted` tinyint(1) DEFAULT 0
-) ENGINE=InnoDB DEFAULT CHARSET=latin1 COLLATE=latin1_swedish_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
 -- --------------------------------------------------------
 
@@ -312,7 +312,7 @@ CREATE TABLE `location` (
   `updated_at` datetime DEFAULT NULL,
   `deleted_at` datetime DEFAULT NULL,
   `isDeleted` tinyint(1) DEFAULT 0
-) ENGINE=InnoDB DEFAULT CHARSET=latin1 COLLATE=latin1_swedish_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
 -- --------------------------------------------------------
 
@@ -325,7 +325,7 @@ CREATE TABLE `location_category` (
   `id` int(11) NOT NULL,
   `location_id` int(11) NOT NULL,
   `category_id` int(11) NOT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=latin1 COLLATE=latin1_swedish_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
 -- --------------------------------------------------------
 
@@ -339,7 +339,7 @@ CREATE TABLE `location_image` (
   `location_id` int(11) NOT NULL,
   `image_id` int(11) NOT NULL,
   `sort_order` int(11) DEFAULT 0
-) ENGINE=InnoDB DEFAULT CHARSET=latin1 COLLATE=latin1_swedish_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
 -- --------------------------------------------------------
 
@@ -357,7 +357,7 @@ CREATE TABLE `location_review` (
   `created_at` datetime DEFAULT current_timestamp(),
   `updated_at` datetime DEFAULT NULL,
   `isDeleted` tinyint(1) DEFAULT 0
-) ENGINE=InnoDB DEFAULT CHARSET=latin1 COLLATE=latin1_swedish_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
 -- --------------------------------------------------------
 
@@ -377,7 +377,7 @@ CREATE TABLE `organizerInfo` (
   `created_at` datetime DEFAULT current_timestamp(),
   `updated_at` datetime DEFAULT NULL,
   `isDeleted` tinyint(1) DEFAULT 0
-) ENGINE=InnoDB DEFAULT CHARSET=latin1 COLLATE=latin1_swedish_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
 -- --------------------------------------------------------
 
@@ -395,7 +395,7 @@ CREATE TABLE `organizer_review` (
   `created_at` datetime DEFAULT current_timestamp(),
   `updated_at` datetime DEFAULT NULL,
   `isDeleted` tinyint(1) DEFAULT 0
-) ENGINE=InnoDB DEFAULT CHARSET=latin1 COLLATE=latin1_swedish_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
 -- --------------------------------------------------------
 
@@ -409,7 +409,7 @@ CREATE TABLE `organizer_settings` (
   `settings_id` int(11) NOT NULL,
   `event_approved_notification` tinyint(4) DEFAULT 1,
   `updated_at` datetime DEFAULT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=latin1 COLLATE=latin1_swedish_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
 -- --------------------------------------------------------
 
@@ -430,7 +430,7 @@ CREATE TABLE `user` (
   `updated_at` datetime DEFAULT NULL,
   `deleted_at` datetime DEFAULT NULL,
   `isDeleted` tinyint(1) DEFAULT 0
-) ENGINE=InnoDB DEFAULT CHARSET=latin1 COLLATE=latin1_swedish_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
 -- --------------------------------------------------------
 
@@ -447,7 +447,7 @@ CREATE TABLE `userInfo` (
   `created_at` datetime DEFAULT current_timestamp(),
   `updated_at` datetime DEFAULT NULL,
   `isDeleted` tinyint(1) DEFAULT 0
-) ENGINE=InnoDB DEFAULT CHARSET=latin1 COLLATE=latin1_swedish_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
 -- --------------------------------------------------------
 
@@ -461,7 +461,7 @@ CREATE TABLE `user_favourite_event` (
   `user_id` int(11) NOT NULL,
   `event_id` int(11) NOT NULL,
   `created_at` datetime DEFAULT current_timestamp()
-) ENGINE=InnoDB DEFAULT CHARSET=latin1 COLLATE=latin1_swedish_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
 -- --------------------------------------------------------
 
@@ -475,7 +475,7 @@ CREATE TABLE `user_favourite_location` (
   `user_id` int(11) NOT NULL,
   `location_id` int(11) NOT NULL,
   `created_at` datetime DEFAULT current_timestamp()
-) ENGINE=InnoDB DEFAULT CHARSET=latin1 COLLATE=latin1_swedish_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
 -- --------------------------------------------------------
 
@@ -490,7 +490,7 @@ CREATE TABLE `user_settings` (
   `event_reminder` tinyint(4) DEFAULT 1,
   `new_event_notification` tinyint(4) DEFAULT 1,
   `updated_at` datetime DEFAULT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=latin1 COLLATE=latin1_swedish_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
 -- --------------------------------------------------------
 -- Tábla szerkezet ehhez a táblához `refresh_token`
@@ -509,7 +509,7 @@ CREATE TABLE `refresh_token` (
   `expires_at` datetime NOT NULL,
   `created_at` datetime DEFAULT current_timestamp(),
   `revoked_at` datetime DEFAULT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=latin1 COLLATE=latin1_swedish_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
 -- --------------------------------------------------------
 -- Tábla szerkezete ehhez a táblához `user_token`
@@ -523,7 +523,7 @@ CREATE TABLE `user_token` (
     `token_type` VARCHAR(255) NOT NULL,
     `expires_at` datetime NOT NULL,
     `created_at` datetime DEFAULT current_timestamp()
-) ENGINE=InnoDB DEFAULT CHARSET=latin1 COLLATE=latin1_swedish_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
 
 --

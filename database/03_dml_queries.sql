@@ -68,7 +68,20 @@ CREATE DEFINER=`root`@`%` PROCEDURE `sp_admin_register` (IN `p_username` VARCHAR
     DECLARE v_base_settings_id INT;
     DECLARE v_admin_settings_id INT;
 
-    call sp_user_create(p_username, p_password_hash, p_email, "user");
+    -- Hibakezelő: ha a láncolt INSERT-ek bármelyike hibázik, minden eddigi
+    -- változást visszavonjuk, hogy ne maradjon árva user/settings sor.
+    DECLARE EXIT HANDLER FOR SQLEXCEPTION
+    BEGIN
+        ROLLBACK;
+        RESIGNAL;
+    END;
+
+    START TRANSACTION;
+
+    -- JAVÍTVA: korábban hiányzott a p_two_factor_enabled argumentum (4 helyett 5
+    -- paraméter kellene), így ez a hívás korábban "Incorrect number of arguments"
+    -- hibával elszállt volna; emellett a "user" típus is hibás volt admin regisztrációnál.
+    call sp_user_create(p_username, p_password_hash, p_email, "admin", 0);
     SET v_user_id = LAST_INSERT_ID();
 
     call sp_base_settings_create(v_user_id);
@@ -78,7 +91,9 @@ CREATE DEFINER=`root`@`%` PROCEDURE `sp_admin_register` (IN `p_username` VARCHAR
     SET v_admin_settings_id = LAST_INSERT_ID();
 
     call sp_adminInfo_create(v_user_id, v_admin_settings_id);
-    
+
+    COMMIT;
+
     SELECT `id`, `username`, `password_hash`, `email`, `type`  FROM `user` WHERE id = v_user_id;
 END$$
 
@@ -96,10 +111,21 @@ END$$
 --
 -- Register User procedure
 --
+DROP PROCEDURE IF EXISTS `sp_user_register`$$
 CREATE DEFINER=`root`@`%` PROCEDURE `sp_user_register` (IN `p_username` VARCHAR(25), IN `p_password_hash` VARCHAR(255), IN `p_email` VARCHAR(255))   BEGIN
     DECLARE v_user_id INT;
     DECLARE v_base_settings_id INT;
     DECLARE v_user_settings_id INT;
+
+    -- Hibakezelő: ha a láncolt INSERT-ek bármelyike hibázik, minden eddigi
+    -- változást visszavonjuk, hogy ne maradjon árva user/settings sor.
+    DECLARE EXIT HANDLER FOR SQLEXCEPTION
+    BEGIN
+        ROLLBACK;
+        RESIGNAL;
+    END;
+
+    START TRANSACTION;
 
     call sp_user_create(p_username, p_password_hash, p_email, "user", "0");
     SET v_user_id = LAST_INSERT_ID();
@@ -111,7 +137,9 @@ CREATE DEFINER=`root`@`%` PROCEDURE `sp_user_register` (IN `p_username` VARCHAR(
     SET v_user_settings_id = LAST_INSERT_ID();
 
     call sp_userInfo_create(v_user_id, v_user_settings_id);
-    
+
+    COMMIT;
+
     SELECT `id`, `username`, `password_hash`, `email`, `type`  FROM `user` WHERE id = v_user_id;
 END$$
 
@@ -223,6 +251,7 @@ END$$
 --
 -- Register organizer procedure
 --
+DROP PROCEDURE IF EXISTS `sp_organizer_register`$$
 CREATE DEFINER=`root`@`%` PROCEDURE `sp_organizer_register` (
     IN `p_username` VARCHAR(25), 
     IN `p_password_hash` VARCHAR(255), 
@@ -234,6 +263,16 @@ CREATE DEFINER=`root`@`%` PROCEDURE `sp_organizer_register` (
     DECLARE v_base_settings_id INT;
     DECLARE v_organizer_settings_id INT;
 
+    -- Hibakezelő: ha a láncolt INSERT-ek bármelyike hibázik, minden eddigi
+    -- változást visszavonjuk, hogy ne maradjon árva user/settings sor.
+    DECLARE EXIT HANDLER FOR SQLEXCEPTION
+    BEGIN
+        ROLLBACK;
+        RESIGNAL;
+    END;
+
+    START TRANSACTION;
+
     call sp_user_create(p_username, p_password_hash, p_email, "organizer", p_two_factor_enabled);
     SET v_user_id = LAST_INSERT_ID();
 
@@ -244,10 +283,13 @@ CREATE DEFINER=`root`@`%` PROCEDURE `sp_organizer_register` (
     SET v_organizer_settings_id = LAST_INSERT_ID();
 
     call sp_organizerInfo_create(v_user_id, v_organizer_settings_id, p_fullname);
-    
+
+    COMMIT;
+
     SELECT `id`, `username`, `password_hash`, `email`, `type`  FROM `user` WHERE id = v_user_id;
 END$$
 
+DROP PROCEDURE IF EXISTS `sp_organizer_settings_create`$$
 CREATE DEFINER=`root`@`%` PROCEDURE `sp_organizer_settings_create` (IN `p_base_settings_id` INT(11))   BEGIN
     DECLARE v_organizer_settings_id INT;
 
@@ -258,6 +300,7 @@ CREATE DEFINER=`root`@`%` PROCEDURE `sp_organizer_settings_create` (IN `p_base_s
     SELECT v_organizer_settings_id AS organizer_settings_id;
 END$$
 
+DROP PROCEDURE IF EXISTS `sp_organizerInfo_create`$$
 CREATE DEFINER=`root`@`%` PROCEDURE `sp_organizerInfo_create` (IN `p_user_id` INT, IN `p_organizer_settings_id` INT, IN `p_fullname` VARCHAR(64))   BEGIN
     DECLARE v_organizerInfo_id INT;
 
@@ -418,6 +461,7 @@ END $$
 --
 -- Refresh token procedures
 --
+DROP PROCEDURE IF EXISTS `sp_refresh_token_create`$$
 CREATE DEFINER=`root`@`localhost` PROCEDURE `sp_refresh_token_create` (IN `p_user_id` INT(11), IN `p_token` VARCHAR(255), IN `p_user_agent` TEXT, IN `p_accept_language` VARCHAR(255), IN `p_sec_ch_ua` TEXT, IN `p_sec_ch_ua_mobile` VARCHAR(20), IN `p_sec_ch_ua_platform` VARCHAR(50), IN `p_expires_at` DATETIME)   BEGIN
     DECLARE v_refresh_token_id INT;
 
@@ -525,6 +569,7 @@ END$$
 --
 -- Get user by Id
 --
+DROP PROCEDURE IF EXISTS `sp_user_get_by_id`$$
 CREATE DEFINER=`root`@`localhost` PROCEDURE `sp_user_get_by_id` (IN `p_user_id` BIGINT)   BEGIN
     DECLARE v_email_verified TINYINT DEFAULT NULL;
 
