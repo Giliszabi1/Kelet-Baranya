@@ -17,6 +17,14 @@ SET time_zone = "+00:00";
 /*!40101 SET @OLD_COLLATION_CONNECTION=@@COLLATION_CONNECTION */;
 /*!40101 SET NAMES utf8mb4 */;
 
+-- Ideiglenesen kikapcsoljuk a foreign key ellenőrzést, mert a DROP TABLE
+-- sorok ábécésorrendben vannak, nem a foreign key függőségek sorrendjében
+-- (pl. `base_settings`-re hivatkozik `organizer_settings`, de `base_settings`
+-- előbb szerepel a fájlban -> enélkül a beállítás nélkül a DROP elszáll
+-- "#3730 - Cannot drop table... referenced by a foreign key constraint" hibával).
+-- A blokk végén (a fájl legalján) visszakapcsoljuk.
+SET FOREIGN_KEY_CHECKS = 0;
+
 --
 -- Adatbázis: `kelet_baranya_db`
 --
@@ -51,7 +59,8 @@ CREATE TABLE `admin_settings` (
   `settings_id` int(11) NOT NULL,
   `event_reminder` tinyint(4) DEFAULT 1,
   `new_event_notification` tinyint(4) DEFAULT 1,
-  `updated_at` datetime DEFAULT NULL
+  `updated_at` datetime DEFAULT NULL,
+  PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
 -- --------------------------------------------------------
@@ -68,7 +77,8 @@ CREATE TABLE `base_settings` (
   `push_notification` tinyint(4) DEFAULT 1,
   `email_notification` tinyint(4) DEFAULT 1,
   `dark_mode` tinyint(4) DEFAULT 0,
-  `updated_at` datetime DEFAULT NULL
+  `updated_at` datetime DEFAULT NULL,
+  PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
 -- --------------------------------------------------------
@@ -81,7 +91,8 @@ DROP TABLE IF EXISTS `category`;
 CREATE TABLE `category` (
   `id` int(11) NOT NULL,
   `name` varchar(50) DEFAULT NULL,
-  `image_id` int(11) DEFAULT NULL
+  `image_id` int(11) DEFAULT NULL,
+  PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
 -- --------------------------------------------------------
@@ -124,7 +135,8 @@ CREATE TABLE `event` (
   `created_at` datetime DEFAULT current_timestamp(),
   `updated_at` datetime DEFAULT NULL,
   `deleted_at` datetime DEFAULT NULL,
-  `isDeleted` tinyint(1) DEFAULT 0
+  `isDeleted` tinyint(1) DEFAULT 0,
+  PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
 -- --------------------------------------------------------
@@ -187,7 +199,8 @@ CREATE TABLE `event_repeat` (
   `created_at` datetime DEFAULT current_timestamp(),
   `updated_at` datetime DEFAULT NULL,
   `deleted_at` datetime DEFAULT NULL,
-  `isDeleted` tinyint(1) DEFAULT 0
+  `isDeleted` tinyint(1) DEFAULT 0,
+  PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
 -- --------------------------------------------------------
@@ -257,7 +270,8 @@ CREATE TABLE `group` (
   `created_at` datetime DEFAULT current_timestamp(),
   `updated_at` datetime DEFAULT NULL,
   `deleted_at` datetime DEFAULT NULL,
-  `isDeleted` tinyint(1) DEFAULT 0
+  `isDeleted` tinyint(1) DEFAULT 0,
+  PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
 -- --------------------------------------------------------
@@ -289,7 +303,8 @@ CREATE TABLE `image` (
   `type` enum('profile','location','event','group','category') NOT NULL,
   `created_by` int(11) DEFAULT NULL,
   `created_at` datetime DEFAULT current_timestamp(),
-  `isDeleted` tinyint(1) DEFAULT 0
+  `isDeleted` tinyint(1) DEFAULT 0,
+  PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
 -- --------------------------------------------------------
@@ -311,7 +326,8 @@ CREATE TABLE `location` (
   `created_at` datetime DEFAULT current_timestamp(),
   `updated_at` datetime DEFAULT NULL,
   `deleted_at` datetime DEFAULT NULL,
-  `isDeleted` tinyint(1) DEFAULT 0
+  `isDeleted` tinyint(1) DEFAULT 0,
+  PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
 -- --------------------------------------------------------
@@ -408,7 +424,8 @@ CREATE TABLE `organizer_settings` (
   `id` int(11) NOT NULL,
   `settings_id` int(11) NOT NULL,
   `event_approved_notification` tinyint(4) DEFAULT 1,
-  `updated_at` datetime DEFAULT NULL
+  `updated_at` datetime DEFAULT NULL,
+  PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
 -- --------------------------------------------------------
@@ -429,7 +446,8 @@ CREATE TABLE `user` (
   `created_at` datetime DEFAULT current_timestamp(),
   `updated_at` datetime DEFAULT NULL,
   `deleted_at` datetime DEFAULT NULL,
-  `isDeleted` tinyint(1) DEFAULT 0
+  `isDeleted` tinyint(1) DEFAULT 0,
+  PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
 -- --------------------------------------------------------
@@ -489,7 +507,8 @@ CREATE TABLE `user_settings` (
   `settings_id` int(11) NOT NULL,
   `event_reminder` tinyint(4) DEFAULT 1,
   `new_event_notification` tinyint(4) DEFAULT 1,
-  `updated_at` datetime DEFAULT NULL
+  `updated_at` datetime DEFAULT NULL,
+  PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
 -- --------------------------------------------------------
@@ -542,20 +561,15 @@ ALTER TABLE `adminInfo`
 -- A tábla indexei `admin_settings`
 --
 ALTER TABLE `admin_settings`
-  ADD PRIMARY KEY (`id`),
   ADD KEY `settings_id` (`settings_id`);
 
 --
 -- A tábla indexei `base_settings`
 --
-ALTER TABLE `base_settings`
-  ADD PRIMARY KEY (`id`);
-
 --
 -- A tábla indexei `category`
 --
 ALTER TABLE `category`
-  ADD PRIMARY KEY (`id`),
   ADD KEY `image_id` (`image_id`);
 
 --
@@ -568,7 +582,6 @@ ALTER TABLE `current_weather`
 -- A tábla indexei `event`
 --
 ALTER TABLE `event`
-  ADD PRIMARY KEY (`id`),
   ADD KEY `location_id` (`location_id`),
   ADD KEY `group_id` (`group_id`),
   ADD KEY `repeat_id` (`repeat_id`),
@@ -602,7 +615,6 @@ ALTER TABLE `event_participant`
 -- A tábla indexei `event_repeat`
 --
 ALTER TABLE `event_repeat`
-  ADD PRIMARY KEY (`id`),
   ADD UNIQUE KEY `event_repeat_index_9` (`created_by_user_id`,`event_id`),
   ADD KEY `event_id` (`event_id`);
 
@@ -632,7 +644,6 @@ ALTER TABLE `friend_request`
 -- A tábla indexei `group`
 --
 ALTER TABLE `group`
-  ADD PRIMARY KEY (`id`),
   ADD KEY `image_id` (`image_id`),
   ADD KEY `created_by` (`created_by`);
 
@@ -648,7 +659,6 @@ ALTER TABLE `group_member`
 -- A tábla indexei `image`
 --
 ALTER TABLE `image`
-  ADD PRIMARY KEY (`id`),
   ADD UNIQUE KEY `path` (`path`) USING HASH,
   ADD KEY `created_by` (`created_by`);
 
@@ -656,7 +666,6 @@ ALTER TABLE `image`
 -- A tábla indexei `location`
 --
 ALTER TABLE `location`
-  ADD PRIMARY KEY (`id`),
   ADD UNIQUE KEY `name` (`name`),
   ADD KEY `group_id` (`group_id`),
   ADD KEY `created_by_user_id` (`created_by_user_id`);
@@ -706,14 +715,12 @@ ALTER TABLE `organizer_review`
 -- A tábla indexei `organizer_settings`
 --
 ALTER TABLE `organizer_settings`
-  ADD PRIMARY KEY (`id`),
   ADD KEY `settings_id` (`settings_id`);
 
 --
 -- A tábla indexei `user`
 --
 ALTER TABLE `user`
-  ADD PRIMARY KEY (`id`),
   ADD UNIQUE KEY `username` (`username`),
   ADD UNIQUE KEY `email` (`email`);
 
@@ -746,7 +753,6 @@ ALTER TABLE `user_favourite_location`
 -- A tábla indexei `user_settings`
 --
 ALTER TABLE `user_settings`
-  ADD PRIMARY KEY (`id`),
   ADD KEY `settings_id` (`settings_id`);
 
 --
@@ -1119,7 +1125,6 @@ ALTER TABLE `user_favourite_location`
 --
 ALTER TABLE `user_settings`
   ADD CONSTRAINT `user_settings_ibfk_1` FOREIGN KEY (`settings_id`) REFERENCES `base_settings` (`id`);
-COMMIT;
 
 --
 -- Megkötések a táblához `refresh_token`
@@ -1135,6 +1140,12 @@ ALTER TABLE `user_token`
     ADD CONSTRAINT `user_token_ibfk_1`
         FOREIGN KEY (`user_id`) REFERENCES `user` (`id`)
         ON DELETE CASCADE;
+
+-- Visszakapcsoljuk a foreign key ellenőrzést, miután minden tábla és
+-- megkötés (constraint) létrejött.
+SET FOREIGN_KEY_CHECKS = 1;
+
+COMMIT;
 
 /*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;
 /*!40101 SET CHARACTER_SET_RESULTS=@OLD_CHARACTER_SET_RESULTS */;
