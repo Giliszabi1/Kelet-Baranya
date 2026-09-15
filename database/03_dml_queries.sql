@@ -52,14 +52,14 @@ DELIMITER $$
 --
 
 DROP PROCEDURE IF EXISTS `sp_adminInfo_create`$$
-CREATE DEFINER=`root`@`%` PROCEDURE `sp_adminInfo_create` (IN `p_user_id` INT, IN `p_admin_settings_id` INT)   BEGIN
-    DECLARE v_adminInfo_id INT;
-
+CREATE DEFINER=`root`@`%` PROCEDURE `sp_adminInfo_create` (
+    IN `p_user_id` INT,
+    IN `p_admin_settings_id` INT,
+    OUT `p_adminInfo_id` INT
+)   BEGIN
     INSERT INTO `adminInfo`( `user_id`,  `admin_settings_id`) VALUES (p_user_id, p_admin_settings_id);
 
-    SET v_adminInfo_id = LAST_INSERT_ID();
-
-    SELECT v_adminInfo_id AS adminInfo_id;
+    SET p_adminInfo_id = LAST_INSERT_ID();
 END$$
 
 DROP PROCEDURE IF EXISTS `sp_admin_register`$$
@@ -67,6 +67,7 @@ CREATE DEFINER=`root`@`%` PROCEDURE `sp_admin_register` (IN `p_username` VARCHAR
     DECLARE v_user_id INT;
     DECLARE v_base_settings_id INT;
     DECLARE v_admin_settings_id INT;
+    DECLARE v_adminInfo_id INT;
 
     -- Hibakezelő: ha a láncolt INSERT-ek bármelyike hibázik, minden eddigi
     -- változást visszavonjuk, hogy ne maradjon árva user/settings sor.
@@ -78,19 +79,14 @@ CREATE DEFINER=`root`@`%` PROCEDURE `sp_admin_register` (IN `p_username` VARCHAR
 
     START TRANSACTION;
 
-    -- JAVÍTVA: korábban hiányzott a p_two_factor_enabled argumentum (4 helyett 5
-    -- paraméter kellene), így ez a hívás korábban "Incorrect number of arguments"
-    -- hibával elszállt volna; emellett a "user" típus is hibás volt admin regisztrációnál.
-    call sp_user_create(p_username, p_password_hash, p_email, "admin", 0);
-    SET v_user_id = LAST_INSERT_ID();
-
-    call sp_base_settings_create(v_user_id);
-    SET v_base_settings_id = LAST_INSERT_ID();
-
-    call sp_admin_settings_create(v_base_settings_id);
-    SET v_admin_settings_id = LAST_INSERT_ID();
-
-    call sp_adminInfo_create(v_user_id, v_admin_settings_id);
+    -- JAVÍTVA: az ID-kat mostantól OUT paraméterekkel kapjuk vissza, nem
+    -- LAST_INSERT_ID()-vel - így nem számít, mi történik a hívott procedure
+    -- belsejében (pl. ha később egy plusz INSERT kerül bele), az érték
+    -- mindig helyesen, közvetlenül a forrás-procedure-ből érkezik.
+    call sp_user_create(p_username, p_password_hash, p_email, "admin", 0, v_user_id);
+    call sp_base_settings_create(v_user_id, v_base_settings_id);
+    call sp_admin_settings_create(v_base_settings_id, v_admin_settings_id);
+    call sp_adminInfo_create(v_user_id, v_admin_settings_id, v_adminInfo_id);
 
     COMMIT;
 
@@ -98,14 +94,13 @@ CREATE DEFINER=`root`@`%` PROCEDURE `sp_admin_register` (IN `p_username` VARCHAR
 END$$
 
 DROP PROCEDURE IF EXISTS `sp_admin_settings_create`$$
-CREATE DEFINER=`root`@`%` PROCEDURE `sp_admin_settings_create` (IN `p_base_settings_id` INT)   BEGIN
-    DECLARE v_admin_settings_id INT;
-
+CREATE DEFINER=`root`@`%` PROCEDURE `sp_admin_settings_create` (
+    IN `p_base_settings_id` INT,
+    OUT `p_admin_settings_id` INT
+)   BEGIN
     INSERT INTO `admin_settings`(`settings_id`, `event_reminder`, `new_event_notification`) VALUES (p_base_settings_id, 0 , 0);
 
-    SET v_admin_settings_id = LAST_INSERT_ID();
-
-    SELECT v_admin_settings_id AS admin_settings_id;
+    SET p_admin_settings_id = LAST_INSERT_ID();
 END$$
 
 --
@@ -116,6 +111,7 @@ CREATE DEFINER=`root`@`%` PROCEDURE `sp_user_register` (IN `p_username` VARCHAR(
     DECLARE v_user_id INT;
     DECLARE v_base_settings_id INT;
     DECLARE v_user_settings_id INT;
+    DECLARE v_userInfo_id INT;
 
     -- Hibakezelő: ha a láncolt INSERT-ek bármelyike hibázik, minden eddigi
     -- változást visszavonjuk, hogy ne maradjon árva user/settings sor.
@@ -127,16 +123,12 @@ CREATE DEFINER=`root`@`%` PROCEDURE `sp_user_register` (IN `p_username` VARCHAR(
 
     START TRANSACTION;
 
-    call sp_user_create(p_username, p_password_hash, p_email, "user", "0");
-    SET v_user_id = LAST_INSERT_ID();
-
-    call sp_base_settings_create(v_user_id);
-    SET v_base_settings_id = LAST_INSERT_ID();
-
-    call sp_user_settings_create(v_base_settings_id);
-    SET v_user_settings_id = LAST_INSERT_ID();
-
-    call sp_userInfo_create(v_user_id, v_user_settings_id);
+    -- JAVÍTVA: az ID-kat mostantól OUT paraméterekkel kapjuk vissza, nem
+    -- LAST_INSERT_ID()-vel - lásd megjegyzés az sp_admin_register-ben.
+    call sp_user_create(p_username, p_password_hash, p_email, "user", "0", v_user_id);
+    call sp_base_settings_create(v_user_id, v_base_settings_id);
+    call sp_user_settings_create(v_base_settings_id, v_user_settings_id);
+    call sp_userInfo_create(v_user_id, v_user_settings_id, v_userInfo_id);
 
     COMMIT;
 
@@ -145,12 +137,13 @@ END$$
 
 
 DROP PROCEDURE IF EXISTS `sp_user_create`$$
-CREATE DEFINER=`root`@`localhost` PROCEDURE `sp_user_create` (
+CREATE DEFINER=`root`@`%` PROCEDURE `sp_user_create` (
     IN `p_username` VARCHAR(25), 
     IN `p_password_hash` VARCHAR(255), 
     IN `p_email` VARCHAR(255), 
     IN `p_type` VARCHAR(255), 
-    in `p_two_factor_enabled` TINYINT(1)
+    in `p_two_factor_enabled` TINYINT(1),
+    OUT `p_user_id` INT
 )   BEGIN
     DECLARE v_exists_username INT DEFAULT 0;
     DECLARE v_exists_email    INT DEFAULT 0;
@@ -206,45 +199,44 @@ CREATE DEFINER=`root`@`localhost` PROCEDURE `sp_user_create` (
     INSERT INTO `user` (`username`, `password_hash`, `email`, `type`, `two_factor_enabled`,`created_at`, `isDeleted`)
     VALUES (p_username, p_password_hash, p_email, p_type, p_two_factor_enabled, NOW(), 0);
 
-    SELECT `id`, `username`, `password_hash`, `email`, `type` FROM `user` WHERE id = LAST_INSERT_ID();
+    SET p_user_id = LAST_INSERT_ID();
 END$$
 
 DROP PROCEDURE IF EXISTS `sp_base_settings_create`$$
-CREATE DEFINER=`root`@`%` PROCEDURE `sp_base_settings_create` (IN `p_user_id` INT(11))   BEGIN
-    DECLARE v_base_settings_id INT;
-
+CREATE DEFINER=`root`@`%` PROCEDURE `sp_base_settings_create` (
+    IN `p_user_id` INT(11),
+    OUT `p_base_settings_id` INT
+)   BEGIN
     INSERT INTO `base_settings`
         (`id`, `language`, `unit_system`, `push_notification`, `email_notification`, `dark_mode`)
     VALUES
         (p_user_id, 'en', 'metric', 0, 0, 0);
 
-    SET v_base_settings_id = p_user_id;
-
-    SELECT v_base_settings_id AS base_settings_id;
+    -- Megjegyzés: a base_settings.id SZÁNDÉKOSAN megegyezik a user.id-val
+    SET p_base_settings_id = p_user_id;
 END$$
 
 
 DROP PROCEDURE IF EXISTS `sp_user_settings_create`$$
-CREATE DEFINER=`root`@`%` PROCEDURE `sp_user_settings_create` (IN `p_base_settings_id` INT(11))   BEGIN
-    DECLARE v_user_settings_id INT;
-
+CREATE DEFINER=`root`@`%` PROCEDURE `sp_user_settings_create` (
+    IN `p_base_settings_id` INT(11),
+    OUT `p_user_settings_id` INT
+)   BEGIN
     INSERT INTO `user_settings`(`settings_id`, `event_reminder`, `new_event_notification`) VALUES (p_base_settings_id, 0 , 0);
 
-    SET v_user_settings_id = LAST_INSERT_ID();
-
-    SELECT v_user_settings_id AS user_settings_id;
+    SET p_user_settings_id = LAST_INSERT_ID();
 END$$
 
 
 DROP PROCEDURE IF EXISTS `sp_userInfo_create`$$
-CREATE DEFINER=`root`@`%` PROCEDURE `sp_userInfo_create` (IN `p_user_id` INT(11), IN `p_user_settings_id` INT(11))   BEGIN
-    DECLARE v_userInfo_id INT;
-
+CREATE DEFINER=`root`@`%` PROCEDURE `sp_userInfo_create` (
+    IN `p_user_id` INT(11),
+    IN `p_user_settings_id` INT(11),
+    OUT `p_userInfo_id` INT
+)   BEGIN
     INSERT INTO `userInfo`( `user_id`,  `user_settings_id`) VALUES (p_user_id, p_user_settings_id);
 
-    SET v_userInfo_id = LAST_INSERT_ID();
-
-    SELECT v_userInfo_id AS userInfo_id;
+    SET p_userInfo_id = LAST_INSERT_ID();
 END$$
 
 
@@ -262,9 +254,8 @@ CREATE DEFINER=`root`@`%` PROCEDURE `sp_organizer_register` (
     DECLARE v_user_id INT;
     DECLARE v_base_settings_id INT;
     DECLARE v_organizer_settings_id INT;
+    DECLARE v_organizerInfo_id INT;
 
-    -- Hibakezelő: ha a láncolt INSERT-ek bármelyike hibázik, minden eddigi
-    -- változást visszavonjuk, hogy ne maradjon árva user/settings sor.
     DECLARE EXIT HANDLER FOR SQLEXCEPTION
     BEGIN
         ROLLBACK;
@@ -273,16 +264,10 @@ CREATE DEFINER=`root`@`%` PROCEDURE `sp_organizer_register` (
 
     START TRANSACTION;
 
-    call sp_user_create(p_username, p_password_hash, p_email, "organizer", p_two_factor_enabled);
-    SET v_user_id = LAST_INSERT_ID();
-
-    call sp_base_settings_create(v_user_id);
-    SET v_base_settings_id = LAST_INSERT_ID();
-
-    call sp_organizer_settings_create(v_base_settings_id);
-    SET v_organizer_settings_id = LAST_INSERT_ID();
-
-    call sp_organizerInfo_create(v_user_id, v_organizer_settings_id, p_fullname);
+    call sp_user_create(p_username, p_password_hash, p_email, "organizer", p_two_factor_enabled, v_user_id);
+    call sp_base_settings_create(v_user_id, v_base_settings_id);
+    call sp_organizer_settings_create(v_base_settings_id, v_organizer_settings_id);
+    call sp_organizerInfo_create(v_user_id, v_organizer_settings_id, p_fullname, v_organizerInfo_id);
 
     COMMIT;
 
@@ -290,29 +275,29 @@ CREATE DEFINER=`root`@`%` PROCEDURE `sp_organizer_register` (
 END$$
 
 DROP PROCEDURE IF EXISTS `sp_organizer_settings_create`$$
-CREATE DEFINER=`root`@`%` PROCEDURE `sp_organizer_settings_create` (IN `p_base_settings_id` INT(11))   BEGIN
-    DECLARE v_organizer_settings_id INT;
-
+CREATE DEFINER=`root`@`%` PROCEDURE `sp_organizer_settings_create` (
+    IN `p_base_settings_id` INT(11),
+    OUT `p_organizer_settings_id` INT
+)   BEGIN
     INSERT INTO `organizer_settings`(`settings_id`, `event_approved_notification`) VALUES (p_base_settings_id, 0);
 
-    SET v_organizer_settings_id = LAST_INSERT_ID();
-
-    SELECT v_organizer_settings_id AS organizer_settings_id;
+    SET p_organizer_settings_id = LAST_INSERT_ID();
 END$$
 
 DROP PROCEDURE IF EXISTS `sp_organizerInfo_create`$$
-CREATE DEFINER=`root`@`%` PROCEDURE `sp_organizerInfo_create` (IN `p_user_id` INT, IN `p_organizer_settings_id` INT, IN `p_fullname` VARCHAR(64))   BEGIN
-    DECLARE v_organizerInfo_id INT;
-
+CREATE DEFINER=`root`@`%` PROCEDURE `sp_organizerInfo_create` (
+    IN `p_user_id` INT,
+    IN `p_organizer_settings_id` INT,
+    IN `p_fullname` VARCHAR(64),
+    OUT `p_organizerInfo_id` INT
+)   BEGIN
     INSERT INTO `organizerInfo`( `user_id`,  `organizer_settings_id`, `fullname`) VALUES (p_user_id, p_organizer_settings_id, p_fullname);
 
-    SET v_organizerInfo_id = LAST_INSERT_ID();
-
-    SELECT v_organizerInfo_id AS organizerInfo_id;
+    SET p_organizerInfo_id = LAST_INSERT_ID();
 END$$
 
 DROP PROCEDURE IF EXISTS `sp_organizer_get_by_id`$$
-CREATE DEFINER=`root`@`localhost` PROCEDURE `sp_organizer_get_by_id`(
+CREATE DEFINER=`root`@`%` PROCEDURE `sp_organizer_get_by_id`(
     IN `p_user_id` BIGINT
 )
 BEGIN
@@ -397,10 +382,10 @@ END$$
 --
 -- Login user procedure
 --
-DROP PROCEDURE IF EXISTS `sp_user_login` $$
-CREATE PROCEDURE `sp_user_login` (
+DROP PROCEDURE IF EXISTS `sp_user_login`$$
+CREATE DEFINER=`root`@`%` PROCEDURE `sp_user_login` (
     IN sp_login_identifiry VARCHAR(255),
-    In sp_user_role VARCHAR(255)
+    IN sp_user_role VARCHAR(255)
 )
 BEGIN
     DECLARE v_count INT DEFAULT 0;
@@ -412,21 +397,19 @@ BEGIN
                 MYSQL_ERRNO = 45007;
     END IF;
 
-    -- Felhasználó keresése email vagy username alapján
     SELECT COUNT(*)
     INTO v_count
     FROM `user`
     WHERE `email` = sp_login_identifiry
        OR `username` = sp_login_identifiry;
 
-    -- Ha nincs találat
     IF v_count = 0 THEN
         SIGNAL SQLSTATE '45000'
             SET MESSAGE_TEXT = 'A felhasználó nem található.',
                 MYSQL_ERRNO = 45004;
     END IF;
 
-    if sp_user_role = "*" THEN
+    IF sp_user_role = '*' THEN
         SELECT
             `id`,
             `username`,
@@ -438,22 +421,22 @@ BEGIN
         FROM `user`
         WHERE `email` = sp_login_identifiry
            OR `username` = sp_login_identifiry;
+    ELSE
+
+        SELECT
+            `id`,
+            `username`,
+            `email`,
+            `password_hash`,
+            `email_verified`,
+            `two_factor_enabled`,
+            `type`
+        FROM `user`
+        WHERE (`email` = sp_login_identifiry AND `type` = sp_user_role)
+           OR (`username` = sp_login_identifiry AND `type` = sp_user_role);
     END IF;
 
-    -- Felhasználó visszaadása
-    SELECT
-        `id`,
-        `username`,
-        `email`,
-        `password_hash`,
-        `email_verified`,
-        `two_factor_enabled`,
-        `type`
-    FROM `user`
-    WHERE `email` = sp_login_identifiry AND `type`= sp_user_role
-       OR `username` = sp_login_identifiry AND `type`= sp_user_role;
-
-END $$
+END$$
 
 
 
@@ -462,7 +445,7 @@ END $$
 -- Refresh token procedures
 --
 DROP PROCEDURE IF EXISTS `sp_refresh_token_create`$$
-CREATE DEFINER=`root`@`localhost` PROCEDURE `sp_refresh_token_create` (IN `p_user_id` INT(11), IN `p_token` VARCHAR(255), IN `p_user_agent` TEXT, IN `p_accept_language` VARCHAR(255), IN `p_sec_ch_ua` TEXT, IN `p_sec_ch_ua_mobile` VARCHAR(20), IN `p_sec_ch_ua_platform` VARCHAR(50), IN `p_expires_at` DATETIME)   BEGIN
+CREATE DEFINER=`root`@`%` PROCEDURE `sp_refresh_token_create` (IN `p_user_id` INT(11), IN `p_token` VARCHAR(255), IN `p_user_agent` TEXT, IN `p_accept_language` VARCHAR(255), IN `p_sec_ch_ua` TEXT, IN `p_sec_ch_ua_mobile` VARCHAR(20), IN `p_sec_ch_ua_platform` VARCHAR(50), IN `p_expires_at` DATETIME)   BEGIN
     DECLARE v_refresh_token_id INT;
 
     INSERT INTO `refresh_token` (
@@ -493,7 +476,7 @@ END$$
 
 
 DROP PROCEDURE IF EXISTS `sp_user_token_get_user`$$
-CREATE PROCEDURE `sp_user_token_get_user`(
+CREATE DEFINER=`root`@`%` PROCEDURE `sp_user_token_get_user`(
     IN p_token VARCHAR(255)
 )
 BEGIN
@@ -506,7 +489,7 @@ BEGIN
 END$$
 
 DROP PROCEDURE IF EXISTS `sp_user_token_get_organizer`$$
-CREATE PROCEDURE `sp_user_token_get_organizer`(
+CREATE DEFINER=`root`@`%` PROCEDURE `sp_user_token_get_organizer`(
     IN p_token VARCHAR(255)
 )
 BEGIN
@@ -519,7 +502,7 @@ BEGIN
 END$$
 
 DROP PROCEDURE IF EXISTS `sp_refresh_token_revoke` $$
-CREATE PROCEDURE `sp_refresh_token_revoke` (
+CREATE DEFINER=`root`@`%` PROCEDURE `sp_refresh_token_revoke` (
     IN p_token VARCHAR(500)
 )
 BEGIN
@@ -534,7 +517,7 @@ END $$
 --
 
 DROP PROCEDURE IF EXISTS `sp_user_token_create`$$
-CREATE PROCEDURE `sp_user_token_create`(
+CREATE DEFINER=`root`@`%` PROCEDURE `sp_user_token_create`(
     IN p_user_id INT,
     IN p_token VARCHAR(255),
     IN p_type VARCHAR(255),
@@ -548,7 +531,7 @@ BEGIN
 END$$
 
 DROP PROCEDURE IF EXISTS `sp_user_token_get`$$
-CREATE PROCEDURE `sp_user_token_get`(
+CREATE DEFINER=`root`@`%` PROCEDURE `sp_user_token_get`(
     IN p_token VARCHAR(255)
 )
 BEGIN
@@ -558,7 +541,7 @@ BEGIN
 END$$
 
 DROP PROCEDURE IF EXISTS `sp_user_token_delete`$$
-CREATE PROCEDURE `sp_user_token_delete`(
+CREATE DEFINER=`root`@`%` PROCEDURE `sp_user_token_delete`(
     IN p_token VARCHAR(255)
 )
 BEGIN
@@ -570,7 +553,7 @@ END$$
 -- Get user by Id
 --
 DROP PROCEDURE IF EXISTS `sp_user_get_by_id`$$
-CREATE DEFINER=`root`@`localhost` PROCEDURE `sp_user_get_by_id` (IN `p_user_id` BIGINT)   BEGIN
+CREATE DEFINER=`root`@`%` PROCEDURE `sp_user_get_by_id` (IN `p_user_id` BIGINT)   BEGIN
     DECLARE v_email_verified TINYINT DEFAULT NULL;
 
     SELECT email_verified
@@ -633,9 +616,13 @@ CREATE DEFINER=`root`@`localhost` PROCEDURE `sp_user_get_by_id` (IN `p_user_id` 
     END IF;
 
 END$$
+
+--
 -- user password update by id
+--
+
 DROP PROCEDURE IF EXISTS `sp_user_update_password`$$
-CREATE PROCEDURE `sp_user_update_password`(
+CREATE DEFINER=`root`@`%` PROCEDURE `sp_user_update_password`(
     IN p_user_id INT,
     IN p_password_hash VARCHAR(255)
 )
@@ -647,13 +634,13 @@ END$$
 -- sp_user_confirm_email
 --
 DROP PROCEDURE IF EXISTS `sp_user_confirm_email`$$
-CREATE PROCEDURE `sp_user_confirm_email`(IN `p_user_id` INT)
+CREATE DEFINER=`root`@`%` PROCEDURE `sp_user_confirm_email`(IN `p_user_id` INT)
 BEGIN
     UPDATE `user` SET `email_verified` = 1 WHERE `id` = `p_user_id`;
 END$$
 
 DROP PROCEDURE IF EXISTS sp_user_set_two_factor $$
-CREATE PROCEDURE sp_user_set_two_factor(
+CREATE DEFINER=`root`@`%` PROCEDURE sp_user_set_two_factor(
     IN p_user_id INT,
     IN p_enabled TINYINT(1)
 )
@@ -664,6 +651,145 @@ BEGIN
  
     SELECT p_user_id AS id, p_enabled AS two_factor_enabled;
 END $$
+
+
+-- --------------------------------------------------------
+--
+-- Location
+--
+-- --------------------------------------------------------
+
+--
+-- sp_location_create
+--
+DROP PROCEDURE IF EXISTS `sp_location_create`$$
+CREATE DEFINER=`root`@`%` PROCEDURE `sp_location_create` (
+    IN `p_name` VARCHAR(50),
+    IN `p_address` VARCHAR(255),
+    IN `p_description` TEXT,
+    IN `p_group_id` INT,
+    IN `p_created_by_user_id` INT,
+    OUT `p_location_id` INT
+)
+BEGIN
+    INSERT INTO `location` (`name`, `address`, `description`, `group_id`, `created_by_user_id`)
+    VALUES (p_name, p_address, p_description, p_group_id, p_created_by_user_id);
+
+    SET p_location_id = LAST_INSERT_ID();
+END$$
+
+--
+-- sp_location_get_by_id
+--
+DROP PROCEDURE IF EXISTS `sp_location_get_by_id`$$
+CREATE DEFINER=`root`@`%` PROCEDURE `sp_location_get_by_id` (
+    IN `p_location_id` INT
+)
+BEGIN
+    SELECT
+        `id`,
+        `name`,
+        `address`,
+        `description`,
+        `rating`,
+        `group_id`,
+        `created_by_user_id`,
+        `approved_status`,
+        `created_at`,
+        `updated_at`
+    FROM `location`
+    WHERE `id` = p_location_id;
+END$$
+
+--
+-- sp_location_list
+--
+DROP PROCEDURE IF EXISTS `sp_location_list`$$
+CREATE DEFINER=`root`@`%` PROCEDURE `sp_location_list` (
+    IN `p_approved_status` ENUM('pending','approved','denied'),
+    IN `p_limit` INT,
+    IN `p_offset` INT
+)
+BEGIN
+    SELECT
+        `id`,
+        `name`,
+        `address`,
+        `rating`,
+        `group_id`,
+        `created_by_user_id`,
+        `approved_status`,
+        `created_at`
+    FROM `location`
+    WHERE `isDeleted` = 0
+      AND (p_approved_status IS NULL OR `approved_status` = p_approved_status)
+    ORDER BY `created_at` DESC
+    LIMIT p_limit OFFSET p_offset;
+END$$
+
+--
+-- sp_location_update
+--
+DROP PROCEDURE IF EXISTS `sp_location_update`$$
+CREATE DEFINER=`root`@`%` PROCEDURE `sp_location_update` (
+    IN `p_location_id` INT,
+    IN `p_name` VARCHAR(50),
+    IN `p_address` VARCHAR(255),
+    IN `p_description` TEXT,
+    IN `p_group_id` INT
+)
+BEGIN
+    UPDATE `location`
+    SET `name` = p_name,
+        `address` = p_address,
+        `description` = p_description,
+        `group_id` = p_group_id,
+        `updated_at` = NOW()
+    WHERE `id` = p_location_id;
+END$$
+
+--
+-- sp_location_soft_delete
+--
+DROP PROCEDURE IF EXISTS `sp_location_soft_delete`$$
+CREATE DEFINER=`root`@`%` PROCEDURE `sp_location_soft_delete` (
+    IN `p_location_id` INT
+)
+BEGIN
+    UPDATE `location`
+    SET `isDeleted` = 1,
+        `deleted_at` = NOW()
+    WHERE `id` = p_location_id;
+END$$
+
+--
+-- sp_location_restore
+--
+DROP PROCEDURE IF EXISTS `sp_location_restore`$$
+CREATE DEFINER=`root`@`%` PROCEDURE `sp_location_restore` (
+    IN `p_location_id` INT
+)
+BEGIN
+    UPDATE `location`
+    SET `isDeleted` = 0,
+        `deleted_at` = NULL
+    WHERE `id` = p_location_id;
+END$$
+
+--
+-- sp_location_set_approved_status
+--
+DROP PROCEDURE IF EXISTS `sp_location_set_approved_status`$$
+CREATE DEFINER=`root`@`%` PROCEDURE `sp_location_set_approved_status` (
+    IN `p_location_id` INT,
+    IN `p_approved_status` ENUM('pending','approved','denied')
+)
+BEGIN
+    UPDATE `location`
+    SET `approved_status` = p_approved_status,
+        `updated_at` = NOW()
+    WHERE `id` = p_location_id;
+END$$
 
 
 DELIMITER ;
