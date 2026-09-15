@@ -44,9 +44,13 @@ CREATE DATABASE IF NOT EXISTS `kelet_baranya_db` DEFAULT CHARACTER SET utf8mb4 C
 USE `kelet_baranya_db`;
 
 DELIMITER $$
+
+-- --------------------------------------------------------
 --
--- Eljárások
+-- Admin regisztráció és kapcsolódó eljárások
 --
+-- --------------------------------------------------------
+
 --
 -- Register Admin procedure
 --
@@ -102,6 +106,13 @@ CREATE DEFINER=`root`@`%` PROCEDURE `sp_admin_settings_create` (
 
     SET p_admin_settings_id = LAST_INSERT_ID();
 END$$
+
+
+-- --------------------------------------------------------
+--
+-- User regisztráció és kapcsolódó eljárások
+--
+-- --------------------------------------------------------
 
 --
 -- Register User procedure
@@ -239,6 +250,12 @@ CREATE DEFINER=`root`@`%` PROCEDURE `sp_userInfo_create` (
     SET p_userInfo_id = LAST_INSERT_ID();
 END$$
 
+
+-- --------------------------------------------------------
+--
+-- Organizer regisztráció és kapcsolódó eljárások
+--
+-- --------------------------------------------------------
 
 --
 -- Register organizer procedure
@@ -379,6 +396,12 @@ BEGIN
 END$$
 
 
+-- --------------------------------------------------------
+--
+-- Bejelentkezés (Login)
+--
+-- --------------------------------------------------------
+
 --
 -- Login user procedure
 --
@@ -441,6 +464,12 @@ END$$
 
 
 
+-- --------------------------------------------------------
+--
+-- Refresh token eljárások
+--
+-- --------------------------------------------------------
+
 --
 -- Refresh token procedures
 --
@@ -474,6 +503,12 @@ CREATE DEFINER=`root`@`%` PROCEDURE `sp_refresh_token_create` (IN `p_user_id` IN
     SELECT v_refresh_token_id AS refresh_token_id;
 END$$
 
+
+-- --------------------------------------------------------
+--
+-- User token eljárások
+--
+-- --------------------------------------------------------
 
 DROP PROCEDURE IF EXISTS `sp_user_token_get_user`$$
 CREATE DEFINER=`root`@`%` PROCEDURE `sp_user_token_get_user`(
@@ -548,6 +583,12 @@ BEGIN
     DELETE FROM user_token WHERE token = p_token;
 END$$
 
+
+-- --------------------------------------------------------
+--
+-- User lekérdezés és módosítás
+--
+-- --------------------------------------------------------
 
 --
 -- Get user by Id
@@ -706,7 +747,7 @@ END$$
 --
 DROP PROCEDURE IF EXISTS `sp_location_list`$$
 CREATE DEFINER=`root`@`%` PROCEDURE `sp_location_list` (
-    IN `p_approved_status` ENUM('pending','approved','denied'),
+    IN `p_approved_status` ENUM('all','pending','approved','denied'),
     IN `p_limit` INT,
     IN `p_offset` INT
 )
@@ -722,7 +763,7 @@ BEGIN
         `created_at`
     FROM `location`
     WHERE `isDeleted` = 0
-      AND (p_approved_status IS NULL OR `approved_status` = p_approved_status)
+      AND (p_approved_status = 'all' OR p_approved_status IS NULL OR `approved_status` = p_approved_status)
     ORDER BY `created_at` DESC
     LIMIT p_limit OFFSET p_offset;
 END$$
