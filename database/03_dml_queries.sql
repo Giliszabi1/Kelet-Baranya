@@ -833,6 +833,163 @@ BEGIN
 END$$
 
 
+-- --------------------------------------------------------
+--
+-- Event
+--
+-- --------------------------------------------------------
+
+--
+-- sp_event_create
+--
+DROP PROCEDURE IF EXISTS `sp_event_create`$$
+CREATE DEFINER=`root`@`%` PROCEDURE `sp_event_create` (
+    IN `p_title` VARCHAR(75),
+    IN `p_location_id` INT,
+    IN `p_start_time` DATETIME,
+    IN `p_end_time` DATETIME,
+    IN `p_description` TEXT,
+    IN `p_group_id` INT,
+    IN `p_max_participants` INT,
+    IN `p_created_by_user_id` INT,
+    OUT `p_event_id` INT
+)
+BEGIN
+    INSERT INTO `event` (`title`, `location_id`, `start_time`, `end_time`, `description`, `group_id`, `max_participants`, `created_by_user_id`)
+    VALUES (p_title, p_location_id, p_start_time, p_end_time, p_description, p_group_id, p_max_participants, p_created_by_user_id);
+
+    SET p_event_id = LAST_INSERT_ID();
+END$$
+
+--
+-- sp_event_get_by_id
+--
+DROP PROCEDURE IF EXISTS `sp_event_get_by_id`$$
+CREATE DEFINER=`root`@`%` PROCEDURE `sp_event_get_by_id` (
+    IN `p_event_id` INT
+)
+BEGIN
+    SELECT
+        `id`,
+        `title`,
+        `location_id`,
+        `start_time`,
+        `end_time`,
+        `description`,
+        `group_id`,
+        `max_participants`,
+        `rating`,
+        `repeat_id`,
+        `approved_status`,
+        `created_by_user_id`,
+        `created_at`,
+        `updated_at`
+    FROM `event`
+    WHERE `id` = p_event_id;
+END$$
+
+--
+-- sp_event_list
+--
+DROP PROCEDURE IF EXISTS `sp_event_list`$$
+CREATE DEFINER=`root`@`%` PROCEDURE `sp_event_list` (
+    IN `p_approved_status` ENUM('all','pending','approved','denied'),
+    IN `p_location_id` INT,
+    IN `p_limit` INT,
+    IN `p_offset` INT
+)
+BEGIN
+    SELECT
+        `id`,
+        `title`,
+        `location_id`,
+        `start_time`,
+        `end_time`,
+        `group_id`,
+        `max_participants`,
+        `rating`,
+        `approved_status`,
+        `created_by_user_id`,
+        `created_at`
+    FROM `event`
+    WHERE `isDeleted` = 0
+      AND (p_approved_status = 'all' OR p_approved_status IS NULL OR `approved_status` = p_approved_status)
+      AND (p_location_id IS NULL OR `location_id` = p_location_id)
+    ORDER BY `start_time` ASC
+    LIMIT p_limit OFFSET p_offset;
+END$$
+
+--
+-- sp_event_update
+--
+DROP PROCEDURE IF EXISTS `sp_event_update`$$
+CREATE DEFINER=`root`@`%` PROCEDURE `sp_event_update` (
+    IN `p_event_id` INT,
+    IN `p_title` VARCHAR(75),
+    IN `p_location_id` INT,
+    IN `p_start_time` DATETIME,
+    IN `p_end_time` DATETIME,
+    IN `p_description` TEXT,
+    IN `p_group_id` INT,
+    IN `p_max_participants` INT
+)
+BEGIN
+    UPDATE `event`
+    SET `title` = p_title,
+        `location_id` = p_location_id,
+        `start_time` = p_start_time,
+        `end_time` = p_end_time,
+        `description` = p_description,
+        `group_id` = p_group_id,
+        `max_participants` = p_max_participants,
+        `updated_at` = NOW()
+    WHERE `id` = p_event_id;
+END$$
+
+--
+-- sp_event_soft_delete
+--
+DROP PROCEDURE IF EXISTS `sp_event_soft_delete`$$
+CREATE DEFINER=`root`@`%` PROCEDURE `sp_event_soft_delete` (
+    IN `p_event_id` INT
+)
+BEGIN
+    UPDATE `event`
+    SET `isDeleted` = 1,
+        `deleted_at` = NOW()
+    WHERE `id` = p_event_id;
+END$$
+
+--
+-- sp_event_restore
+--
+DROP PROCEDURE IF EXISTS `sp_event_restore`$$
+CREATE DEFINER=`root`@`%` PROCEDURE `sp_event_restore` (
+    IN `p_event_id` INT
+)
+BEGIN
+    UPDATE `event`
+    SET `isDeleted` = 0,
+        `deleted_at` = NULL
+    WHERE `id` = p_event_id;
+END$$
+
+--
+-- sp_event_set_approved_status
+--
+DROP PROCEDURE IF EXISTS `sp_event_set_approved_status`$$
+CREATE DEFINER=`root`@`%` PROCEDURE `sp_event_set_approved_status` (
+    IN `p_event_id` INT,
+    IN `p_approved_status` ENUM('pending','approved','denied')
+)
+BEGIN
+    UPDATE `event`
+    SET `approved_status` = p_approved_status,
+        `updated_at` = NOW()
+    WHERE `id` = p_event_id;
+END$$
+
+
 DELIMITER ;
 COMMIT;
 
